@@ -52,18 +52,18 @@ No repositório GitHub:
 
 ### Frontend (GitHub Pages):
 ```
-https://avilaops.github.io/Controle-Roncatin/
+https://avilaops.github.io/ERP/
 ```
 
 ### Backend (Container no GHCR):
 ```
-ghcr.io/avilaops/controle-roncatin/backend:latest
+ghcr.io/avilaops/erp/backend:latest
 ```
 
 Para rodar o backend localmente:
 ```bash
-docker pull ghcr.io/avilaops/controle-roncatin/backend:latest
-docker run -p 3000:3000 -e MONGO_ATLAS_URI="sua-connection-string" ghcr.io/avilaops/controle-roncatin/backend:latest
+docker pull ghcr.io/avilaops/erp/backend:latest
+docker run -p 3000:3000 -e MONGO_ATLAS_URI="sua-connection-string" ghcr.io/avilaops/erp/backend:latest
 ```
 
 ---
@@ -87,7 +87,7 @@ docker run -p 3000:3000 -e MONGO_ATLAS_URI="sua-connection-string" ghcr.io/avila
 
 ## 📞 Próximos Passos (Após Deploy):
 
-1. **Testar Frontend:** Acesse `https://avilaops.github.io/Controle-Roncatin/`
+1. **Testar Frontend:** Acesse `https://avilaops.github.io/ERP/`
 2. **Verificar API:** Frontend vai tentar conectar em `http://localhost:3000/api`
 3. **Ajustar URL da API:** Você precisará rodar o backend ou ajustar URL no frontend para apontar para onde você hospedará o backend
 4. **Hospedar Backend:** Opções:
@@ -117,7 +117,7 @@ Para ter tudo funcionando em produção:
 - [ ] GitHub Pages configurado (branch `gh-pages`)
 - [ ] GitHub Actions habilitado
 - [ ] Primeiro workflow executado com sucesso
-- [ ] Frontend acessível em `https://avilaops.github.io/Controle-Roncatin/`
+- [ ] Frontend acessível em `https://avilaops.github.io/ERP/`
 - [ ] Container backend disponível em GHCR
 - [ ] Backend hospedado em alguma plataforma cloud
 - [ ] Frontend ajustado para apontar para backend em produção
