@@ -4,44 +4,29 @@ use axum::{
     Json,
 };
 use serde_json::json;
-use thiserror::Error;
 
 pub type Result<T> = std::result::Result<T, AppError>;
 
-#[derive(Debug, Error)]
+#[derive(Debug, thiserror::Error)]
 pub enum AppError {
-    #[error("Erro no banco de dados: {0}")]
-    Database(#[from] sqlx::Error),
+    #[error("Database error: {0}")]
+    Database(#[from] mongodb::error::Error),
 
-    #[error("Não encontrado")]
+    #[error("Not found")]
     NotFound,
 
-    #[error("Erro de validação: {0}")]
-    Validation(String),
-
-    #[error("Erro interno do servidor")]
-    Internal(#[from] anyhow::Error),
+    #[error("Invalid ObjectId: {0}")]
+    InvalidObjectId(#[from] mongodb::bson::oid::Error),
 }
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, message) = match self {
-            AppError::Database(e) => {
-                tracing::error!("Database error: {:?}", e);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Erro no banco de dados")
-            }
-            AppError::NotFound => (StatusCode::NOT_FOUND, "Recurso não encontrado"),
-            AppError::Validation(ref msg) => (StatusCode::BAD_REQUEST, msg.as_str()),
-            AppError::Internal(e) => {
-                tracing::error!("Internal error: {:?}", e);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Erro interno do servidor")
-            }
+            AppError::Database(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()),
+            AppError::NotFound => (StatusCode::NOT_FOUND, "Recurso não encontrado".to_string()),
+            AppError::InvalidObjectId(e) => (StatusCode::BAD_REQUEST, e.to_string()),
         };
 
-        let body = Json(json!({
-            "error": message,
-        }));
-
-        (status, body).into_response()
+        (status, Json(json!({ "error": message }))).into_response()
     }
 }

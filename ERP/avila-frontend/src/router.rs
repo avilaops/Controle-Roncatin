@@ -1,6 +1,6 @@
+use crate::core::VirtualNode;
 /// Sistema de roteamento SPA do Avila Framework
 use std::collections::HashMap;
-use crate::core::VirtualNode;
 
 pub struct Router {
     routes: HashMap<String, Box<dyn Fn() -> VirtualNode>>,
@@ -27,8 +27,7 @@ impl Router {
         if let Some(handler) = self.routes.get(&self.current_route) {
             handler()
         } else {
-            VirtualNode::new("div")
-                .child(VirtualNode::text("404 - Página não encontrada"))
+            VirtualNode::new("div").child(VirtualNode::text("404 - Página não encontrada"))
         }
     }
 

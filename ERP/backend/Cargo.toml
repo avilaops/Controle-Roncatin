@@ -1,50 +1,21 @@
 [package]
-name = "avila-erp-backend"
-version.workspace = true
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
+name = "erp-backend"
+version = "0.1.0"
+edition = "2021"
 
 [dependencies]
-# Web Framework (sem equivalente Avila compatível)
-axum.workspace = true
-tower.workspace = true
-tower-http.workspace = true
-
-# Database - MongoDB Atlas
+axum = "0.7"
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace"] }
 mongodb = "2.8"
-bson = "2.9"
-
-# Serialization (mantido por compatibilidade com Axum/SQLx)
-serde.workspace = true
-serde_json.workspace = true
-
-# Async runtime (mantido por compatibilidade com Axum/SQLx)
-tokio.workspace = true
-
-# Logging (mantido por compatibilidade)
-tracing.workspace = true
-tracing-subscriber.workspace = true
-
-# Validation (sem equivalente Avila)
-validator.workspace = true
-
-# Error handling (mantido por simplicidade)
-anyhow.workspace = true
-thiserror.workspace = true
-
-# Time e UUID (mantidos por compatibilidade com SQLx)
-uuid.workspace = true
-chrono.workspace = true
-
-# Arxis Ecosystem - Agora dentro do projeto
-avila-cache = { path = "../avila-cache" }
-avila-metrics = { path = "../avila-metrics" }
-
-[lib]
-name = "avila_erp"
-path = "src/lib.rs"
-
-[[bin]]
-name = "avila-erp-server"
-path = "src/main.rs"
+bson = { version = "2.9", features = ["chrono-0_4"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+anyhow = "1"
+thiserror = "1"
+chrono = { version = "0.4", features = ["serde"] }
+futures = "0.3"
+dotenv = "0.15"

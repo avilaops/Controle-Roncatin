@@ -1,9 +1,9 @@
 //! Telemetry and observability
 
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::RwLock;
-use serde::{Deserialize, Serialize};
 
 /// Telemetry configuration
 #[derive(Debug, Clone)]

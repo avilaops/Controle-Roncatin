@@ -1,41 +1,69 @@
-use avila_erp::{Config, routes};
-use axum::Router;
-use tower_http::cors::CorsLayer;
-use tracing::info;
+use anyhow::Context;
+use axum::{routing::get, Router};
+use std::net::SocketAddr;
+use tower_http::cors::{Any, CorsLayer};
+
+mod error;
+mod models;
+mod mongodb;
+mod routes;
+
+use mongodb::MongoDb;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // Inicializar telemetria
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "info,avila_erp=debug".into()),
-        )
-        .json()
-        .init();
+    dotenv::dotenv().ok();
+    tracing_subscriber::fmt::init();
 
-    info!("🚀 Iniciando Avila ERP Server - YOLO MODE");
+    let mongo_uri = std::env::var("MONGO_ATLAS_URI")
+        .context("A variável de ambiente MONGO_ATLAS_URI não está definida. Configure o arquivo .env do backend ou defina-a no ambiente antes de iniciar o servidor.")?;
 
-    // Carregar configuração
-    let config = Config::from_env()?;
+    let mongo_db_name = std::env::var("MONGO_DB_NAME").unwrap_or_else(|_| "erp".to_string());
 
-    // Conectar ao MongoDB Atlas
-    let mongodb_uri = std::env::var("MONGO_ATLAS_URI")
-        .unwrap_or_else(|_| config.database_url.clone());
-    
-    let mongo = avila_erp::mongodb::MongoDb::new(&mongodb_uri, "avila_erp").await?;
+    tracing::info!(
+        "Tentando conectar ao MongoDB Atlas (db: {})...",
+        mongo_db_name
+    );
 
-    info!("✅ MongoDB Atlas conectado");
+    let mongo = match MongoDb::new(&mongo_uri, &mongo_db_name).await {
+        Ok(db) => {
+            tracing::info!("✅ Conectado ao MongoDB Atlas");
+            db
+        }
+        Err(e) => {
+            tracing::error!("❌ Erro ao conectar no MongoDB: {}", e);
+            return Err(e.into());
+        }
+    };
 
-    // Criar aplicação
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods(Any)
+        .allow_headers(Any);
+
+    let api_routes = Router::new()
+        .merge(routes::frontend::routes())
+        .nest("/financeiro", routes::financeiro::routes(mongo.clone()))
+        .nest("/bancos", routes::bancos::routes(mongo));
+
     let app = Router::new()
-        .nest("/api/v1", routes::create_routes(mongo))
-        .layer(CorsLayer::permissive());
+        .route("/health", get(|| async { "OK" }))
+        .nest("/api/v1", api_routes)
+        .layer(cors);
 
-    let addr = format!("{}:{}", config.host, config.port);
-    info!("🌐 Servidor rodando em http://{}", addr);
+    let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
+    let port = std::env::var("PORT")
+        .ok()
+        .and_then(|value| value.parse::<u16>().ok())
+        .unwrap_or(3000);
 
-    let listener = tokio::net::TcpListener::bind(&addr).await?;
+    let addr: SocketAddr = format!("{}:{}", host, port)
+        .parse()
+        .context("HOST ou PORT inválidos. Use valores como HOST=0.0.0.0 e PORT=3000")?;
+
+    tracing::info!("🚀 Servidor rodando em http://{}", addr);
+
+    let listener = tokio::net::TcpListener::bind(addr).await?;
     axum::serve(listener, app).await?;
 
     Ok(())

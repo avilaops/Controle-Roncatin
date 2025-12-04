@@ -1,6 +1,6 @@
 //! Compression utilities (placeholder - waiting for avila-compress)
 
-use crate::error::{AvilaError, Result};
+use crate::error::Result;
 // use avila_compress;  // Coming soon
 
 /// Compression level
@@ -68,7 +68,10 @@ pub struct CompressionStats {
 }
 
 /// Compress with statistics tracking
-pub fn compress_with_stats(data: &[u8], level: CompressionLevel) -> Result<(Vec<u8>, CompressionStats)> {
+pub fn compress_with_stats(
+    data: &[u8],
+    level: CompressionLevel,
+) -> Result<(Vec<u8>, CompressionStats)> {
     let start = std::time::Instant::now();
     let original_size = data.len();
 

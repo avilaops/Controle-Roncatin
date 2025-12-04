@@ -67,7 +67,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .execute()
         .await?;
 
-    println!("✅ Found {} high-level users\n", high_level_users.documents.len());
+    println!(
+        "✅ Found {} high-level users\n",
+        high_level_users.documents.len()
+    );
 
     // 7. Update document
     println!("✏️  Updating user...");

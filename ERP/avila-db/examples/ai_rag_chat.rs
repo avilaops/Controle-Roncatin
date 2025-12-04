@@ -39,11 +39,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Simular knowledge base com embeddings
     let knowledge = vec![
-        ("AvilaDB é um banco de dados NoSQL distribuído globalmente", vec![0.1, 0.2, 0.3, 0.4, 0.5]),
-        ("Otimizado para Brasil e LATAM com latência <10ms", vec![0.2, 0.3, 0.4, 0.5, 0.6]),
-        ("Suporta vector search nativo para RAG", vec![0.3, 0.4, 0.5, 0.6, 0.7]),
-        ("Cache inteligente e compressão automática", vec![0.4, 0.5, 0.6, 0.7, 0.8]),
-        ("APIs simples e intuitivas em Rust, Python, Node.js", vec![0.5, 0.6, 0.7, 0.8, 0.9]),
+        (
+            "AvilaDB é um banco de dados NoSQL distribuído globalmente",
+            vec![0.1, 0.2, 0.3, 0.4, 0.5],
+        ),
+        (
+            "Otimizado para Brasil e LATAM com latência <10ms",
+            vec![0.2, 0.3, 0.4, 0.5, 0.6],
+        ),
+        (
+            "Suporta vector search nativo para RAG",
+            vec![0.3, 0.4, 0.5, 0.6, 0.7],
+        ),
+        (
+            "Cache inteligente e compressão automática",
+            vec![0.4, 0.5, 0.6, 0.7, 0.8],
+        ),
+        (
+            "APIs simples e intuitivas em Rust, Python, Node.js",
+            vec![0.5, 0.6, 0.7, 0.8, 0.9],
+        ),
     ];
 
     for (i, (text, embedding)) in knowledge.iter().enumerate() {
@@ -79,7 +94,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .await?;
         let search_time = start.elapsed();
 
-        println!("🔍 Busca semântica: {:?} - {} docs relevantes", search_time, relevant_docs.len());
+        println!(
+            "🔍 Busca semântica: {:?} - {} docs relevantes",
+            search_time,
+            relevant_docs.len()
+        );
         println!("\n📄 Contexto recuperado:");
         for (i, doc) in relevant_docs.iter().enumerate() {
             println!("  {}. {}", i + 1, doc["text"]);
@@ -89,13 +108,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Build context e gerar resposta
     let context = ConversationContext {
         user_id: user_id.to_string(),
-        messages: vec![
-            Message {
-                role: "user".to_string(),
-                content: user_query.to_string(),
-                embedding: Some(query_embedding.clone()),
-            },
-        ],
+        messages: vec![Message {
+            role: "user".to_string(),
+            content: user_query.to_string(),
+            embedding: Some(query_embedding.clone()),
+        }],
         metadata: serde_json::json!({
             "session_id": session_id,
             "timestamp": chrono::Utc::now().to_rfc3339(),
@@ -151,7 +168,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             &session_id,
             Document::new()
                 .set("context", serde_json::to_value(&updated_context)?)
-                .set("lastUpdate", chrono::Utc::now().to_rfc3339())
+                .set("lastUpdate", chrono::Utc::now().to_rfc3339()),
         )
         .await?;
 
@@ -186,7 +203,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let diagnostics = client.diagnostics().await;
     println!("\n⚡ Performance:");
     println!("  Latência média: {:?}", diagnostics.avg_latency);
-    println!("  Cache hit rate: {:.1}%", diagnostics.cache_hit_rate * 100.0);
+    println!(
+        "  Cache hit rate: {:.1}%",
+        diagnostics.cache_hit_rate * 100.0
+    );
 
     println!("\n🎉 RAG demo concluída!");
 

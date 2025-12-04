@@ -19,7 +19,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create vector index (HNSW)
     println!("Creating vector index (1536 dimensions, cosine similarity)...");
-    memories.create_vector_index("embedding", 1536, "cosine").await?;
+    memories
+        .create_vector_index("embedding", 1536, "cosine")
+        .await?;
     println!("✓ Vector index created\n");
 
     // Insert chat memories with embeddings
@@ -28,15 +30,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let memories_data = vec![
         (
             "Tell me about quantum physics",
-            vec![0.1, 0.2, 0.3, /* ... 1536 dims */],
+            vec![0.1, 0.2, 0.3 /* ... 1536 dims */],
         ),
         (
             "What is machine learning?",
-            vec![0.15, 0.18, 0.29, /* ... 1536 dims */],
+            vec![0.15, 0.18, 0.29 /* ... 1536 dims */],
         ),
         (
             "Explain general relativity",
-            vec![0.12, 0.19, 0.31, /* ... 1536 dims */],
+            vec![0.12, 0.19, 0.31 /* ... 1536 dims */],
         ),
     ];
 
@@ -54,10 +56,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Perform semantic search
     println!("Performing semantic search for 'physics concepts'...");
-    let query_embedding = vec![0.11, 0.21, 0.32, /* ... 1536 dims */];
+    let query_embedding = vec![0.11, 0.21, 0.32 /* ... 1536 dims */];
 
     let similar = memories
-        .vector_search("embedding", vec![0.0; 1536]).await // Placeholder
+        .vector_search("embedding", vec![0.0; 1536])
+        .await // Placeholder
         .top_k(3)
         .execute()
         .await?;

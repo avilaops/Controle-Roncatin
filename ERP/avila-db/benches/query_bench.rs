@@ -2,18 +2,14 @@
 //!
 //! Run with: cargo bench --bench query_bench
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
 use aviladb::{AvilaClient, Document};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 
 fn bench_document_creation(c: &mut Criterion) {
     let mut group = c.benchmark_group("document_creation");
 
     group.bench_function("simple", |b| {
-        b.iter(|| {
-            Document::new()
-                .set("id", "test123")
-                .set("value", 42)
-        })
+        b.iter(|| Document::new().set("id", "test123").set("value", 42))
     });
 
     group.bench_function("complex", |b| {
@@ -23,11 +19,14 @@ fn bench_document_creation(c: &mut Criterion) {
                 .set("name", "João Silva")
                 .set("level", 42)
                 .set("inventory", vec!["sword", "shield", "potion"])
-                .set("stats", serde_json::json!({
-                    "hp": 100,
-                    "mp": 50,
-                    "attack": 25
-                }))
+                .set(
+                    "stats",
+                    serde_json::json!({
+                        "hp": 100,
+                        "mp": 50,
+                        "attack": 25
+                    }),
+                )
         })
     });
 
@@ -43,13 +42,9 @@ fn bench_document_serialization(c: &mut Criterion) {
 
     let mut group = c.benchmark_group("serialization");
 
-    group.bench_function("to_json", |b| {
-        b.iter(|| doc.to_json())
-    });
+    group.bench_function("to_json", |b| b.iter(|| doc.to_json()));
 
-    group.bench_function("size_bytes", |b| {
-        b.iter(|| doc.size_bytes())
-    });
+    group.bench_function("size_bytes", |b| b.iter(|| doc.size_bytes()));
 
     group.finish();
 }

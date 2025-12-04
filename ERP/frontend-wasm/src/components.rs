@@ -47,12 +47,15 @@ pub fn show_alert(message: &str, alert_type: &str) {
                 let container_clone = container.clone();
                 let closure = wasm_bindgen::closure::Closure::wrap(Box::new(move || {
                     container_clone.set_inner_html("");
-                }) as Box<dyn FnMut()>);
+                })
+                    as Box<dyn FnMut()>);
 
-                window.set_timeout_with_callback_and_timeout_and_arguments_0(
-                    closure.as_ref().unchecked_ref(),
-                    3000
-                ).ok();
+                window
+                    .set_timeout_with_callback_and_timeout_and_arguments_0(
+                        closure.as_ref().unchecked_ref(),
+                        3000,
+                    )
+                    .ok();
                 closure.forget();
             }
         }
@@ -60,9 +63,7 @@ pub fn show_alert(message: &str, alert_type: &str) {
 }
 
 pub fn get_element_by_id(id: &str) -> Option<Element> {
-    window()?
-        .document()?
-        .get_element_by_id(id)
+    window()?.document()?.get_element_by_id(id)
 }
 
 pub fn set_inner_html(id: &str, html: &str) {

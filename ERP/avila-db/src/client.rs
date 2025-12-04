@@ -121,7 +121,8 @@ impl AvilaClient {
             "region": "sa-east-1" // Brazil by default
         });
 
-        let _response: serde_json::Value = self.http_client
+        let _response: serde_json::Value = self
+            .http_client
             .post_with_headers(&url, &payload, headers)
             .await?;
 
@@ -140,9 +141,7 @@ impl AvilaClient {
             reqwest::header::HeaderValue::from_str(&format!("Bearer {}", token))?,
         );
 
-        let response: serde_json::Value = self.http_client
-            .get_with_headers(&url, headers)
-            .await?;
+        let response: serde_json::Value = self.http_client.get_with_headers(&url, headers).await?;
 
         let databases = response["databases"]
             .as_array()
@@ -168,9 +167,7 @@ impl AvilaClient {
             reqwest::header::HeaderValue::from_str(&format!("Bearer {}", token))?,
         );
 
-        self.http_client
-            .delete_with_headers(&url, headers)
-            .await?;
+        self.http_client.delete_with_headers(&url, headers).await?;
 
         Ok(())
     }

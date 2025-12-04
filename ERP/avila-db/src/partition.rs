@@ -206,7 +206,9 @@ impl PartitionStrategy {
             }
             Self::Hierarchical { fields } => {
                 if fields.is_empty() {
-                    return Err("Hierarchical partition key must have at least one field".to_string());
+                    return Err(
+                        "Hierarchical partition key must have at least one field".to_string()
+                    );
                 }
                 if fields.len() > 5 {
                     return Err("Hierarchical partition key cannot exceed 5 levels".to_string());

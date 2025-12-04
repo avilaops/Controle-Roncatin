@@ -113,11 +113,10 @@ impl Component for App {
             .child(
                 VirtualNode::new("h1")
                     .class("title")
-                    .child(VirtualNode::text("🚀 Avila Framework"))
+                    .child(VirtualNode::text("🚀 Avila Framework")),
             )
-            .child(
-                VirtualNode::new("p")
-                    .child(VirtualNode::text("O melhor framework frontend 100% Rust da história!"))
-            )
+            .child(VirtualNode::new("p").child(VirtualNode::text(
+                "O melhor framework frontend 100% Rust da história!",
+            )))
     }
 }

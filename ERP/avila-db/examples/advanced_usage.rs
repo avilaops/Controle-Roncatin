@@ -41,19 +41,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .set("username", format!("Player{}", i))
             .set("level", (i % 100) as i64)
             .set("xp", (i * 150) as i64)
-            .set("guild", if i % 3 == 0 { "Dragons" } else if i % 3 == 1 { "Phoenix" } else { "Titans" })
+            .set(
+                "guild",
+                if i % 3 == 0 {
+                    "Dragons"
+                } else if i % 3 == 1 {
+                    "Phoenix"
+                } else {
+                    "Titans"
+                },
+            )
             .set("active", true)
-            .set("stats", serde_json::json!({
-                "kills": i * 5,
-                "deaths": i * 2,
-                "assists": i * 3
-            }));
+            .set(
+                "stats",
+                serde_json::json!({
+                    "kills": i * 5,
+                    "deaths": i * 2,
+                    "assists": i * 3
+                }),
+            );
 
         players.insert(player).await?;
     }
     let elapsed = start.elapsed();
     println!("✅ Inseridos 1000 players em {:?}", elapsed);
-    println!("📈 Throughput: {:.2} docs/s\n", 1000.0 / elapsed.as_secs_f64());
+    println!(
+        "📈 Throughput: {:.2} docs/s\n",
+        1000.0 / elapsed.as_secs_f64()
+    );
 
     // 3. Queries com cache
     println!("🔍 3. Queries com Cache Inteligente");
@@ -66,7 +81,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .execute()
         .await?;
     let cold_time = start.elapsed();
-    println!("❄️  Cold cache: {:?} - {} resultados", cold_time, high_level.len());
+    println!(
+        "❄️  Cold cache: {:?} - {} resultados",
+        cold_time,
+        high_level.len()
+    );
 
     // Segunda query (hot cache)
     let start = Instant::now();
@@ -76,8 +95,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .execute()
         .await?;
     let hot_time = start.elapsed();
-    println!("🔥 Hot cache: {:?} - {} resultados", hot_time, high_level.len());
-    println!("⚡ Speedup: {:.2}x mais rápido\n", cold_time.as_secs_f64() / hot_time.as_secs_f64());
+    println!(
+        "🔥 Hot cache: {:?} - {} resultados",
+        hot_time,
+        high_level.len()
+    );
+    println!(
+        "⚡ Speedup: {:.2}x mais rápido\n",
+        cold_time.as_secs_f64() / hot_time.as_secs_f64()
+    );
 
     // 4. Agregações complexas
     println!("📊 4. Agregações e Análises");
@@ -88,10 +114,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Guild Statistics:");
     for stat in guild_stats {
-        println!("  {} - {} members, avg level: {:.1}",
-            stat["guild"],
-            stat["members"],
-            stat["avg_level"]
+        println!(
+            "  {} - {} members, avg level: {:.1}",
+            stat["guild"], stat["members"], stat["avg_level"]
         );
     }
     println!();
@@ -117,8 +142,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Diagnósticos:");
     println!("  Latência média: {:?}", diagnostics.avg_latency);
     println!("  Total de requests: {}", diagnostics.total_requests);
-    println!("  Cache hit rate: {:.1}%", diagnostics.cache_hit_rate * 100.0);
-    println!("  Compressão: {:.1}% economia", diagnostics.compression_ratio * 100.0);
+    println!(
+        "  Cache hit rate: {:.1}%",
+        diagnostics.cache_hit_rate * 100.0
+    );
+    println!(
+        "  Compressão: {:.1}% economia",
+        diagnostics.compression_ratio * 100.0
+    );
     println!();
 
     // 7. Transações e consistência

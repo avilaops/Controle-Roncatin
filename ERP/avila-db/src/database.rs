@@ -1,12 +1,9 @@
 //! Database operations
 
-use std::sync::Arc;
 use crate::{
-    auth::AuthProvider,
-    http::HttpClient,
-    telemetry::TelemetryCollector,
-    Collection, Config, Result,
+    auth::AuthProvider, http::HttpClient, telemetry::TelemetryCollector, Collection, Config, Result,
 };
+use std::sync::Arc;
 
 /// Database handle for collections
 #[derive(Clone)]
@@ -67,7 +64,7 @@ impl Database {
         // Send CREATE COLLECTION HTTP request
         let token = self.auth_provider.get_token().await?;
         let url = format!("/v1/databases/{}/collections", self.name);
-        
+
         let mut headers = reqwest::header::HeaderMap::new();
         headers.insert(
             reqwest::header::AUTHORIZATION,
@@ -83,7 +80,8 @@ impl Database {
             "partitionKey": partition_key
         });
 
-        let _response: serde_json::Value = self.http_client
+        let _response: serde_json::Value = self
+            .http_client
             .post_with_headers(&url, &payload, headers)
             .await?;
 
@@ -101,16 +99,14 @@ impl Database {
         // Send DELETE COLLECTION HTTP request
         let token = self.auth_provider.get_token().await?;
         let url = format!("/v1/databases/{}/collections/{}", self.name, name);
-        
+
         let mut headers = reqwest::header::HeaderMap::new();
         headers.insert(
             reqwest::header::AUTHORIZATION,
             reqwest::header::HeaderValue::from_str(&format!("Bearer {}", token))?,
         );
 
-        self.http_client
-            .delete_with_headers(&url, headers)
-            .await?;
+        self.http_client.delete_with_headers(&url, headers).await?;
 
         Ok(())
     }
@@ -119,7 +115,7 @@ impl Database {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{HttpClient, HttpConfig, AuthProvider, TelemetryCollector, TelemetryConfig};
+    use crate::{AuthProvider, HttpClient, HttpConfig, TelemetryCollector, TelemetryConfig};
 
     #[tokio::test]
     async fn test_database_collection() {
@@ -134,7 +130,8 @@ mod tests {
             http_client,
             auth_provider,
             telemetry,
-        ).unwrap();
+        )
+        .unwrap();
 
         let collection = db.collection("users").await;
         assert!(collection.is_ok());

@@ -1,9 +1,9 @@
 //! HTTP client implementation for AvilaDB cloud connectivity
 
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::Semaphore;
-use serde::{Deserialize, Serialize};
 
 use crate::error::{AvilaError, Result};
 
@@ -82,11 +82,16 @@ impl HttpClient {
     pub async fn get<T: for<'de> Deserialize<'de>>(&self, path: &str) -> Result<T> {
         let url = format!("{}{}", self.config.endpoint, path);
         self.execute_with_retry(|| async {
-            let response = self.client.get(&url).send().await
+            let response = self
+                .client
+                .get(&url)
+                .send()
+                .await
                 .map_err(|e| AvilaError::Network(e.to_string()))?;
 
             Self::handle_response(response).await
-        }).await
+        })
+        .await
     }
 
     /// Execute GET request with custom headers
@@ -97,14 +102,17 @@ impl HttpClient {
     ) -> Result<T> {
         let url = format!("{}{}", self.config.endpoint, path);
         self.execute_with_retry(|| async {
-            let response = self.client.get(&url)
+            let response = self
+                .client
+                .get(&url)
                 .headers(headers.clone())
                 .send()
                 .await
                 .map_err(|e| AvilaError::Network(e.to_string()))?;
 
             Self::handle_response(response).await
-        }).await
+        })
+        .await
     }
 
     /// Execute POST request with retry logic
@@ -115,14 +123,17 @@ impl HttpClient {
     ) -> Result<R> {
         let url = format!("{}{}", self.config.endpoint, path);
         self.execute_with_retry(|| async {
-            let response = self.client.post(&url)
+            let response = self
+                .client
+                .post(&url)
                 .json(body)
                 .send()
                 .await
                 .map_err(|e| AvilaError::Network(e.to_string()))?;
 
             Self::handle_response(response).await
-        }).await
+        })
+        .await
     }
 
     /// Execute POST request with custom headers
@@ -134,7 +145,9 @@ impl HttpClient {
     ) -> Result<R> {
         let url = format!("{}{}", self.config.endpoint, path);
         self.execute_with_retry(|| async {
-            let response = self.client.post(&url)
+            let response = self
+                .client
+                .post(&url)
                 .headers(headers.clone())
                 .json(body)
                 .send()
@@ -142,7 +155,8 @@ impl HttpClient {
                 .map_err(|e| AvilaError::Network(e.to_string()))?;
 
             Self::handle_response(response).await
-        }).await
+        })
+        .await
     }
 
     /// Execute PUT request with retry logic
@@ -153,14 +167,17 @@ impl HttpClient {
     ) -> Result<R> {
         let url = format!("{}{}", self.config.endpoint, path);
         self.execute_with_retry(|| async {
-            let response = self.client.put(&url)
+            let response = self
+                .client
+                .put(&url)
                 .json(body)
                 .send()
                 .await
                 .map_err(|e| AvilaError::Network(e.to_string()))?;
 
             Self::handle_response(response).await
-        }).await
+        })
+        .await
     }
 
     /// Execute PATCH request with custom headers
@@ -172,7 +189,9 @@ impl HttpClient {
     ) -> Result<R> {
         let url = format!("{}{}", self.config.endpoint, path);
         self.execute_with_retry(|| async {
-            let response = self.client.patch(&url)
+            let response = self
+                .client
+                .patch(&url)
                 .headers(headers.clone())
                 .json(body)
                 .send()
@@ -180,14 +199,17 @@ impl HttpClient {
                 .map_err(|e| AvilaError::Network(e.to_string()))?;
 
             Self::handle_response(response).await
-        }).await
+        })
+        .await
     }
 
     /// Execute DELETE request with retry logic
     pub async fn delete(&self, path: &str) -> Result<()> {
         let url = format!("{}{}", self.config.endpoint, path);
         self.execute_with_retry(|| async {
-            let response = self.client.delete(&url)
+            let response = self
+                .client
+                .delete(&url)
                 .send()
                 .await
                 .map_err(|e| AvilaError::Network(e.to_string()))?;
@@ -195,9 +217,13 @@ impl HttpClient {
             if response.status().is_success() {
                 Ok(())
             } else {
-                Err(AvilaError::Network(format!("DELETE failed: {}", response.status())))
+                Err(AvilaError::Network(format!(
+                    "DELETE failed: {}",
+                    response.status()
+                )))
             }
-        }).await
+        })
+        .await
     }
 
     /// Execute DELETE request with custom headers
@@ -208,7 +234,9 @@ impl HttpClient {
     ) -> Result<()> {
         let url = format!("{}{}", self.config.endpoint, path);
         self.execute_with_retry(|| async {
-            let response = self.client.delete(&url)
+            let response = self
+                .client
+                .delete(&url)
                 .headers(headers.clone())
                 .send()
                 .await
@@ -217,9 +245,13 @@ impl HttpClient {
             if response.status().is_success() {
                 Ok(())
             } else {
-                Err(AvilaError::Network(format!("DELETE failed: {}", response.status())))
+                Err(AvilaError::Network(format!(
+                    "DELETE failed: {}",
+                    response.status()
+                )))
             }
-        }).await
+        })
+        .await
     }
 
     /// Execute request with exponential backoff retry
@@ -228,36 +260,47 @@ impl HttpClient {
         F: Fn() -> Fut,
         Fut: std::future::Future<Output = Result<T>>,
     {
-        let _permit = self.semaphore.acquire().await
+        let _permit = self
+            .semaphore
+            .acquire()
+            .await
             .map_err(|e| AvilaError::Internal(e.to_string()))?;
 
         let start = Instant::now();
-        self.stats.requests.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        self.stats
+            .requests
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
         let mut attempts = 0;
-        let mut last_error = None;
 
         loop {
             match f().await {
                 Ok(result) => {
                     let latency = start.elapsed().as_millis() as u64;
-                    self.stats.total_latency_ms.fetch_add(latency, std::sync::atomic::Ordering::Relaxed);
-                    self.stats.successes.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    self.stats
+                        .total_latency_ms
+                        .fetch_add(latency, std::sync::atomic::Ordering::Relaxed);
+                    self.stats
+                        .successes
+                        .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                     return Ok(result);
                 }
                 Err(e) => {
                     attempts += 1;
-                    last_error = Some(e);
 
                     if attempts >= self.config.max_retries {
-                        self.stats.failures.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                        return Err(last_error.unwrap());
+                        self.stats
+                            .failures
+                            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                        return Err(e);
                     }
 
                     // Exponential backoff
                     let backoff = self.config.retry_backoff_ms * (2_u64.pow(attempts - 1));
                     tokio::time::sleep(Duration::from_millis(backoff)).await;
-                    self.stats.retries.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    self.stats
+                        .retries
+                        .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                 }
             }
         }
@@ -270,16 +313,23 @@ impl HttpClient {
         let status = response.status();
 
         if status.is_success() {
-            response.json::<T>().await
+            response
+                .json::<T>()
+                .await
                 .map_err(|e| AvilaError::Serialization(e.to_string()))
         } else {
-            let error_msg = response.text().await
+            let error_msg = response
+                .text()
+                .await
                 .unwrap_or_else(|_| format!("HTTP {}", status));
 
             match status.as_u16() {
                 400 => Err(AvilaError::Validation(error_msg)),
                 404 => Err(AvilaError::NotFound(error_msg)),
-                429 => Err(AvilaError::Network(format!("Rate limit exceeded: {}", error_msg))),
+                429 => Err(AvilaError::Network(format!(
+                    "Rate limit exceeded: {}",
+                    error_msg
+                ))),
                 500..=599 => Err(AvilaError::Internal(error_msg)),
                 _ => Err(AvilaError::Network(error_msg)),
             }
@@ -289,14 +339,36 @@ impl HttpClient {
     /// Get client statistics
     pub fn stats(&self) -> ClientStatsSnapshot {
         ClientStatsSnapshot {
-            requests: self.stats.requests.load(std::sync::atomic::Ordering::Relaxed),
-            successes: self.stats.successes.load(std::sync::atomic::Ordering::Relaxed),
-            failures: self.stats.failures.load(std::sync::atomic::Ordering::Relaxed),
-            retries: self.stats.retries.load(std::sync::atomic::Ordering::Relaxed),
+            requests: self
+                .stats
+                .requests
+                .load(std::sync::atomic::Ordering::Relaxed),
+            successes: self
+                .stats
+                .successes
+                .load(std::sync::atomic::Ordering::Relaxed),
+            failures: self
+                .stats
+                .failures
+                .load(std::sync::atomic::Ordering::Relaxed),
+            retries: self
+                .stats
+                .retries
+                .load(std::sync::atomic::Ordering::Relaxed),
             avg_latency_ms: {
-                let total = self.stats.total_latency_ms.load(std::sync::atomic::Ordering::Relaxed);
-                let requests = self.stats.requests.load(std::sync::atomic::Ordering::Relaxed);
-                if requests > 0 { total / requests } else { 0 }
+                let total = self
+                    .stats
+                    .total_latency_ms
+                    .load(std::sync::atomic::Ordering::Relaxed);
+                let requests = self
+                    .stats
+                    .requests
+                    .load(std::sync::atomic::Ordering::Relaxed);
+                if requests > 0 {
+                    total / requests
+                } else {
+                    0
+                }
             },
         }
     }

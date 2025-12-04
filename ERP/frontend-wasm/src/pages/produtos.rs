@@ -1,5 +1,5 @@
+use crate::{api, components, models::Produto};
 use wasm_bindgen::prelude::*;
-use crate::{api, models::Produto, components};
 
 pub struct Produtos;
 

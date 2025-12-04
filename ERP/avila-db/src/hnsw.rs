@@ -3,8 +3,8 @@
 //! This module provides an efficient approximate nearest neighbor search algorithm
 //! optimized for high-dimensional vector spaces.
 
-use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::cmp::Ordering;
+use std::collections::{BinaryHeap, HashMap, HashSet};
 
 /// Distance metric for vector similarity
 #[derive(Debug, Clone, Copy)]
@@ -20,7 +20,6 @@ pub enum DistanceMetric {
 /// A node in the HNSW graph
 #[derive(Debug, Clone)]
 struct HnswNode {
-    id: usize,
     vector: Vec<f32>,
     level: usize,
     neighbors: Vec<Vec<usize>>, // Neighbors at each level
@@ -60,10 +59,10 @@ pub struct HnswIndex {
     nodes: HashMap<usize, HnswNode>,
     entry_point: Option<usize>,
     dimension: usize,
-    m: usize,              // Max connections per layer
-    m_max: usize,          // Max connections at layer 0
+    m: usize,               // Max connections per layer
+    m_max: usize,           // Max connections at layer 0
     ef_construction: usize, // Size of dynamic candidate list during construction
-    ml: f64,               // Normalization factor for level generation
+    ml: f64,                // Normalization factor for level generation
     metric: DistanceMetric,
 }
 
@@ -110,16 +109,13 @@ impl HnswIndex {
                 let norm_b: f32 = b.iter().map(|x| x * x).sum::<f32>().sqrt();
                 1.0 - (dot / (norm_a * norm_b))
             }
-            DistanceMetric::Euclidean => {
-                a.iter()
-                    .zip(b.iter())
-                    .map(|(x, y)| (x - y) * (x - y))
-                    .sum::<f32>()
-                    .sqrt()
-            }
-            DistanceMetric::DotProduct => {
-                -a.iter().zip(b.iter()).map(|(x, y)| x * y).sum::<f32>()
-            }
+            DistanceMetric::Euclidean => a
+                .iter()
+                .zip(b.iter())
+                .map(|(x, y)| (x - y) * (x - y))
+                .sum::<f32>()
+                .sqrt(),
+            DistanceMetric::DotProduct => -a.iter().zip(b.iter()).map(|(x, y)| x * y).sum::<f32>(),
         }
     }
 
@@ -147,8 +143,7 @@ impl HnswIndex {
         let level = self.random_level();
         let neighbors = vec![Vec::new(); level + 1];
 
-        let node = HnswNode {
-            id,
+        let mut node = HnswNode {
             vector: vector.clone(),
             level,
             neighbors,
@@ -187,10 +182,8 @@ impl HnswIndex {
                 }
             }
 
-            if let Some(node) = self.nodes.get_mut(&id) {
-                if node.neighbors.len() > lc {
-                    node.neighbors[lc] = neighbors_at_level;
-                }
+            if node.neighbors.len() > lc {
+                node.neighbors[lc] = neighbors_at_level;
             }
 
             current_nearest = candidates;
@@ -207,7 +200,13 @@ impl HnswIndex {
     }
 
     /// Search for k nearest neighbors at a specific layer
-    fn search_layer(&self, query: &[f32], entry_points: &[usize], num_to_return: usize, layer: usize) -> Vec<usize> {
+    fn search_layer(
+        &self,
+        query: &[f32],
+        entry_points: &[usize],
+        num_to_return: usize,
+        layer: usize,
+    ) -> Vec<usize> {
         let mut visited = HashSet::new();
         let mut candidates = BinaryHeap::new();
         let mut results = BinaryHeap::new();
@@ -248,7 +247,9 @@ impl HnswIndex {
                         if let Some(neighbor_node) = self.nodes.get(&neighbor_id) {
                             let dist = self.distance(query, &neighbor_node.vector);
 
-                            if results.len() < num_to_return || dist < results.peek().unwrap().distance {
+                            if results.len() < num_to_return
+                                || dist < results.peek().unwrap().distance
+                            {
                                 candidates.push(SearchResult {
                                     id: neighbor_id,
                                     distance: dist,
@@ -274,7 +275,12 @@ impl HnswIndex {
     }
 
     /// Search for k nearest neighbors
-    pub fn search(&self, query: &[f32], k: usize, ef: Option<usize>) -> Result<Vec<SearchResult>, String> {
+    pub fn search(
+        &self,
+        query: &[f32],
+        k: usize,
+        ef: Option<usize>,
+    ) -> Result<Vec<SearchResult>, String> {
         if query.len() != self.dimension {
             return Err(format!(
                 "Query dimension mismatch: expected {}, got {}",
@@ -314,7 +320,11 @@ impl HnswIndex {
         }
 
         // Sort by distance
-        results.sort_by(|a, b| a.distance.partial_cmp(&b.distance).unwrap_or(Ordering::Equal));
+        results.sort_by(|a, b| {
+            a.distance
+                .partial_cmp(&b.distance)
+                .unwrap_or(Ordering::Equal)
+        });
 
         Ok(results)
     }

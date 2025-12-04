@@ -1,5 +1,5 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
 use aviladb::{AvilaClient, Document};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 
 async fn setup_test_data(client: &AvilaClient, count: usize) -> aviladb::Result<()> {
     let db = client.database("bench_db");
@@ -23,13 +23,15 @@ fn benchmark_queries(c: &mut Criterion) {
     let rt = tokio::runtime::Runtime::new().unwrap();
 
     let client = rt.block_on(async {
-        AvilaClient::connect("http://localhost:8000").await
+        AvilaClient::connect("http://localhost:8000")
+            .await
             .expect("Failed to connect")
     });
 
     // Setup test data
     rt.block_on(async {
-        setup_test_data(&client, 10000).await
+        setup_test_data(&client, 10000)
+            .await
             .expect("Failed to setup test data");
     });
 
@@ -59,7 +61,9 @@ fn benchmark_queries(c: &mut Criterion) {
             let collection = db.collection("users");
 
             let results = collection
-                .query("SELECT * FROM users WHERE level > @min AND score < @max AND active = @active")
+                .query(
+                    "SELECT * FROM users WHERE level > @min AND score < @max AND active = @active",
+                )
                 .param("min", 30)
                 .param("max", 5000)
                 .param("active", true)
@@ -94,7 +98,8 @@ fn benchmark_cache(c: &mut Criterion) {
     let rt = tokio::runtime::Runtime::new().unwrap();
 
     let client = rt.block_on(async {
-        AvilaClient::connect("http://localhost:8000").await
+        AvilaClient::connect("http://localhost:8000")
+            .await
             .expect("Failed to connect")
     });
 
@@ -153,7 +158,8 @@ fn benchmark_throughput(c: &mut Criterion) {
     let rt = tokio::runtime::Runtime::new().unwrap();
 
     let client = rt.block_on(async {
-        AvilaClient::connect("http://localhost:8000").await
+        AvilaClient::connect("http://localhost:8000")
+            .await
             .expect("Failed to connect")
     });
 
@@ -173,8 +179,7 @@ fn benchmark_throughput(c: &mut Criterion) {
                             .set("userId", format!("batch_user_{}", i))
                             .set("batchId", i);
 
-                        collection.insert(doc).await
-                            .expect("Insert failed");
+                        collection.insert(doc).await.expect("Insert failed");
                     }
                 });
             },
@@ -184,5 +189,10 @@ fn benchmark_throughput(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, benchmark_queries, benchmark_cache, benchmark_throughput);
+criterion_group!(
+    benches,
+    benchmark_queries,
+    benchmark_cache,
+    benchmark_throughput
+);
 criterion_main!(benches);

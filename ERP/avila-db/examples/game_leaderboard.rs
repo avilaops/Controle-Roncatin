@@ -10,8 +10,8 @@
 //! Run with: cargo run --example game_leaderboard
 
 use aviladb::{AvilaClient, Document};
-use serde_json::json;
 use rand::Rng;
+use serde_json::json;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -43,7 +43,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let player_data = vec![
         ("player001", "CoolGamer", "São Paulo", "Brazil", 1500),
         ("player002", "ProGamer99", "Rio de Janeiro", "Brazil", 2100),
-        ("player003", "SkillMaster", "Buenos Aires", "Argentina", 1850),
+        (
+            "player003",
+            "SkillMaster",
+            "Buenos Aires",
+            "Argentina",
+            1850,
+        ),
         ("player004", "FastShooter", "Santiago", "Chile", 1920),
         ("player005", "ElitePro", "Brasília", "Brazil", 2400),
         ("player006", "NinjaKing", "Lima", "Peru", 1650),
@@ -82,8 +88,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut rng = rand::thread_rng();
     let player_ids = vec![
-        "player001", "player002", "player003", "player004", "player005",
-        "player006", "player007", "player008", "player009", "player010",
+        "player001",
+        "player002",
+        "player003",
+        "player004",
+        "player005",
+        "player006",
+        "player007",
+        "player008",
+        "player009",
+        "player010",
     ];
 
     for match_num in 1..=20 {
@@ -120,7 +134,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         // Update player stats
         if outcome == 0 {
             // Player 1 wins
-            players.update()
+            players
+                .update()
                 .set("wins", "wins + 1")
                 .set("totalMatches", "totalMatches + 1")
                 .set("elo", "elo + 25")
@@ -129,7 +144,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .execute()
                 .await?;
 
-            players.update()
+            players
+                .update()
                 .set("losses", "losses + 1")
                 .set("totalMatches", "totalMatches + 1")
                 .set("elo", "elo - 15")
@@ -140,7 +156,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         } else if outcome == 1 {
             // Draw
             for pid in [player1_id, player2_id] {
-                players.update()
+                players
+                    .update()
                     .set("draws", "draws + 1")
                     .set("totalMatches", "totalMatches + 1")
                     .set("xp", "xp + 50")
@@ -150,7 +167,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         } else {
             // Player 2 wins
-            players.update()
+            players
+                .update()
                 .set("wins", "wins + 1")
                 .set("totalMatches", "totalMatches + 1")
                 .set("elo", "elo + 25")
@@ -159,7 +177,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .execute()
                 .await?;
 
-            players.update()
+            players
+                .update()
                 .set("losses", "losses + 1")
                 .set("totalMatches", "totalMatches + 1")
                 .set("elo", "elo - 15")
@@ -199,8 +218,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             0.0
         };
 
-        println!("#{:<2} 🏅 {:<15} | {} | ELO: {:>4} | W/L: {}/{} ({:.1}%)",
-            rank + 1, username, country, elo, wins, losses, win_rate);
+        println!(
+            "#{:<2} 🏅 {:<15} | {} | ELO: {:>4} | W/L: {}/{} ({:.1}%)",
+            rank + 1,
+            username,
+            country,
+            elo,
+            wins,
+            losses,
+            win_rate
+        );
     }
     println!();
 
@@ -219,8 +246,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let city: String = doc.get("city")?;
         let elo: i32 = doc.get("elo")?;
 
-        println!("#{} 🥇 {} from {} - ELO: {}",
-            rank + 1, username, city, elo);
+        println!("#{} 🥇 {} from {} - ELO: {}", rank + 1, username, city, elo);
     }
     println!();
 
@@ -283,8 +309,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             format!("Winner: {}", winner)
         };
 
-        println!("{}: {} vs {} | {} | Duration: {}s",
-            match_id, player1, player2, result, duration);
+        println!(
+            "{}: {} vs {} | {} | Duration: {}s",
+            match_id, player1, player2, result, duration
+        );
     }
     println!();
 
@@ -296,7 +324,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Total Players: {}", global_leaderboard.total_count);
     println!("Total Matches: {}", recent_matches.total_count);
     println!("Database Latency: {}ms (avg)", stats.avg_latency_ms);
-    println!("Compression Ratio: {:.2}x", global_leaderboard.compression_ratio);
+    println!(
+        "Compression Ratio: {:.2}x",
+        global_leaderboard.compression_ratio
+    );
     println!("Cache Hit Rate: {:.1}%", stats.cache_hit_rate * 100.0);
 
     println!("\n✅ Game leaderboard example completed!");

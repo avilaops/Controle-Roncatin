@@ -1,10 +1,13 @@
 //! Document type and operations
 
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::collections::HashMap;
 
-use crate::{error::{AvilaError, Result}, MAX_DOCUMENT_SIZE};
+use crate::{
+    error::{AvilaError, Result},
+    MAX_DOCUMENT_SIZE,
+};
 
 /// AvilaDB document with key-value fields
 ///
@@ -45,8 +48,7 @@ impl Document {
         K: Into<String>,
         V: Serialize,
     {
-        let value_json = serde_json::to_value(value)
-            .expect("Failed to serialize value");
+        let value_json = serde_json::to_value(value).expect("Failed to serialize value");
         self.fields.insert(key.into(), value_json);
         self
     }
@@ -62,11 +64,12 @@ impl Document {
     /// assert_eq!(level, 42);
     /// ```
     pub fn get<T: for<'de> Deserialize<'de>>(&self, key: &str) -> Result<T> {
-        let value = self.fields.get(key)
+        let value = self
+            .fields
+            .get(key)
             .ok_or_else(|| AvilaError::Internal(format!("Field not found: {}", key)))?;
 
-        serde_json::from_value(value.clone())
-            .map_err(AvilaError::from)
+        serde_json::from_value(value.clone()).map_err(AvilaError::from)
     }
 
     /// Get a field value as Option
@@ -80,7 +83,10 @@ impl Document {
         let size = json.len();
 
         if size > MAX_DOCUMENT_SIZE {
-            return Err(AvilaError::Validation(format!("Document too large: {} bytes (max: {} bytes)", size, MAX_DOCUMENT_SIZE)));
+            return Err(AvilaError::Validation(format!(
+                "Document too large: {} bytes (max: {} bytes)",
+                size, MAX_DOCUMENT_SIZE
+            )));
         }
 
         Ok(())
@@ -88,9 +94,7 @@ impl Document {
 
     /// Get document size in bytes
     pub fn size_bytes(&self) -> usize {
-        serde_json::to_vec(self)
-            .map(|v| v.len())
-            .unwrap_or(0)
+        serde_json::to_vec(self).map(|v| v.len()).unwrap_or(0)
     }
 
     /// Convert to JSON string
@@ -128,8 +132,7 @@ mod tests {
 
     #[test]
     fn test_document_size() {
-        let doc = Document::new()
-            .set("field", "value");
+        let doc = Document::new().set("field", "value");
 
         let size = doc.size_bytes();
         assert!(size > 0);
@@ -138,8 +141,7 @@ mod tests {
 
     #[test]
     fn test_document_validate() {
-        let doc = Document::new()
-            .set("userId", "user123");
+        let doc = Document::new().set("userId", "user123");
 
         assert!(doc.validate().is_ok());
     }
@@ -157,9 +159,7 @@ mod tests {
 
     #[test]
     fn test_document_json() {
-        let doc = Document::new()
-            .set("userId", "user123")
-            .set("level", 42);
+        let doc = Document::new().set("userId", "user123").set("level", 42);
 
         let json = doc.to_json().unwrap();
         let parsed = Document::from_json(&json).unwrap();

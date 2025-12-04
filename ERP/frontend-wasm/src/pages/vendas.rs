@@ -1,5 +1,5 @@
+use crate::{api, components, models::Venda};
 use wasm_bindgen::prelude::*;
-use crate::{api, models::Venda, components};
 
 pub struct Vendas;
 
@@ -41,7 +41,9 @@ impl Vendas {
                         </td>
                     </tr>"#,
                     v.id,
-                    v.cliente_id.map(|id| format!("Cliente #{}", id)).unwrap_or("-".to_string()),
+                    v.cliente_id
+                        .map(|id| format!("Cliente #{}", id))
+                        .unwrap_or("-".to_string()),
                     components::format_currency(v.total_final),
                     badge,
                     v.id

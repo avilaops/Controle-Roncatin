@@ -29,11 +29,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .set("deviceId", "sensor-001")
         .set("name", "Temperature Sensor - Lab A")
         .set("type", "temperature")
-        .set("location", json!({
-            "city": "São Paulo",
-            "country": "Brazil",
-            "coordinates": [-23.5505, -46.6333]
-        }))
+        .set(
+            "location",
+            json!({
+                "city": "São Paulo",
+                "country": "Brazil",
+                "coordinates": [-23.5505, -46.6333]
+            }),
+        )
         .set("firmware", "v2.1.0")
         .set("status", "online")
         .set("capabilities", vec!["temperature", "humidity", "pressure"])

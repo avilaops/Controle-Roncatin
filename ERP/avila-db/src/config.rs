@@ -127,15 +127,21 @@ impl Config {
     /// Validate configuration
     pub fn validate(&self) -> crate::error::Result<()> {
         if self.max_connections == 0 {
-            return Err(crate::error::AvilaError::Config("max_connections must be greater than 0".to_string()));
+            return Err(crate::error::AvilaError::Config(
+                "max_connections must be greater than 0".to_string(),
+            ));
         }
 
         if self.connection_timeout == 0 {
-            return Err(crate::error::AvilaError::Config("connection_timeout must be greater than 0".to_string()));
+            return Err(crate::error::AvilaError::Config(
+                "connection_timeout must be greater than 0".to_string(),
+            ));
         }
 
         if self.max_document_size > 4 * 1024 * 1024 {
-            return Err(crate::error::AvilaError::Config("max_document_size cannot exceed 4 MB".to_string()));
+            return Err(crate::error::AvilaError::Config(
+                "max_document_size cannot exceed 4 MB".to_string(),
+            ));
         }
 
         Ok(())

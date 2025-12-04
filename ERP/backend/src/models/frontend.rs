@@ -52,7 +52,7 @@ pub struct ItemVenda {
     pub subtotal: f64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DashboardData {
     pub vendas_hoje: VendasHoje,
     pub estoque_critico: Vec<EstoqueCritico>,
@@ -60,13 +60,13 @@ pub struct DashboardData {
     pub resumo_mes: ResumoMes,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct VendasHoje {
     pub quantidade: i64,
     pub valor_total: f64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct EstoqueCritico {
     pub id: i64,
     pub nome: String,
@@ -74,7 +74,7 @@ pub struct EstoqueCritico {
     pub estoque_minimo: i32,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ProdutoMaisVendido {
     pub produto_id: i64,
     pub produto_nome: String,
@@ -82,37 +82,9 @@ pub struct ProdutoMaisVendido {
     pub valor_total: f64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ResumoMes {
     pub total_vendas: i64,
     pub valor_total: f64,
     pub ticket_medio: f64,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ContaBancaria {
-    #[serde(rename = "_id")]
-    pub id: Option<String>,
-    pub nome: String,
-    pub banco: String,
-    pub agencia: String,
-    pub numero_conta: String,
-    pub tipo_conta: String,
-    pub saldo_inicial: f64,
-    pub saldo_atual: f64,
-    pub ativo: bool,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Cartao {
-    #[serde(rename = "_id")]
-    pub id: Option<String>,
-    pub nome: String,
-    pub bandeira: String,
-    pub ultimos_digitos: String,
-    pub limite_total: f64,
-    pub limite_disponivel: f64,
-    pub dia_vencimento: i32,
-    pub dia_fechamento: i32,
-    pub ativo: bool,
 }

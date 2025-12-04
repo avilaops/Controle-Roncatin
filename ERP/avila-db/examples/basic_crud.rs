@@ -45,7 +45,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .set("tags", vec!["developer", "rust", "brazil"]);
 
     let result1 = users.insert(user1).await?;
-    println!("✅ Inserted user: {} (size: {} bytes)", result1.id, result1.size_bytes);
+    println!(
+        "✅ Inserted user: {} (size: {} bytes)",
+        result1.id, result1.size_bytes
+    );
 
     let user2 = Document::new()
         .set("userId", "user002")
@@ -57,7 +60,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .set("tags", vec!["designer", "ui-ux"]);
 
     let result2 = users.insert(user2).await?;
-    println!("✅ Inserted user: {} (size: {} bytes)", result2.id, result2.size_bytes);
+    println!(
+        "✅ Inserted user: {} (size: {} bytes)",
+        result2.id, result2.size_bytes
+    );
 
     let user3 = Document::new()
         .set("userId", "user003")
@@ -69,7 +75,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .set("tags", vec!["student", "learning-rust"]);
 
     let result3 = users.insert(user3).await?;
-    println!("✅ Inserted user: {} (size: {} bytes)\n", result3.id, result3.size_bytes);
+    println!(
+        "✅ Inserted user: {} (size: {} bytes)\n",
+        result3.id, result3.size_bytes
+    );
 
     // 5. BATCH INSERT - Insert multiple documents at once
     println!("📦 Batch inserting documents...");
@@ -127,7 +136,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .execute()
         .await?;
 
-    println!("✅ Found {} users from São Paulo:", sp_users.documents.len());
+    println!(
+        "✅ Found {} users from São Paulo:",
+        sp_users.documents.len()
+    );
     for doc in &sp_users.documents {
         let name: String = doc.get("name")?;
         let age: i32 = doc.get("age")?;
@@ -142,12 +154,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .execute()
         .await?;
 
-    println!("✅ Found {} users older than 30\n", older_users.documents.len());
+    println!(
+        "✅ Found {} users older than 30\n",
+        older_users.documents.len()
+    );
 
     // 8. UPDATE - Modify existing documents
     println!("✏️  Updating user...");
 
-    let updated_count = users.update()
+    let updated_count = users
+        .update()
         .set("city", "Campinas")
         .set("active", true)
         .where_eq("userId", "user003")
@@ -167,13 +183,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let name: String = doc.get("name")?;
         let city: String = doc.get("city")?;
         let active: bool = doc.get("active")?;
-        println!("🔍 Verified: {} is now in {} (active: {})\n", name, city, active);
+        println!(
+            "🔍 Verified: {} is now in {} (active: {})\n",
+            name, city, active
+        );
     }
 
     // 9. DELETE - Remove documents
     println!("🗑️  Deleting user...");
 
-    let deleted_count = users.delete()
+    let deleted_count = users
+        .delete()
         .where_eq("userId", "user005")
         .execute()
         .await?;
@@ -182,14 +202,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 10. Final query to see remaining users
     println!("📊 Final count of users...");
-    let all_users = users
-        .query("SELECT * FROM users")
-        .execute()
-        .await?;
+    let all_users = users.query("SELECT * FROM users").execute().await?;
 
-    println!("✅ Total users in collection: {}", all_users.documents.len());
+    println!(
+        "✅ Total users in collection: {}",
+        all_users.documents.len()
+    );
     println!("   Query latency: {}ms", all_users.latency_ms);
-    println!("   Compression ratio: {:.2}x\n", all_users.compression_ratio);
+    println!(
+        "   Compression ratio: {:.2}x\n",
+        all_users.compression_ratio
+    );
 
     // 11. Get client statistics
     let stats = client.stats().await;

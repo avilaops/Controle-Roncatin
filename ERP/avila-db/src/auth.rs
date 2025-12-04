@@ -1,8 +1,8 @@
 //! Authentication and authorization
 
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
-use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
 
 use crate::error::{AvilaError, Result};
@@ -89,7 +89,8 @@ impl AuthProvider {
     /// Authenticate and get new token
     async fn authenticate(&self) -> Result<String> {
         let creds = self.credentials.read().await;
-        let credentials = creds.as_ref()
+        let credentials = creds
+            .as_ref()
             .ok_or_else(|| AvilaError::Config("No credentials configured".to_string()))?;
 
         // Make HTTP request to auth endpoint
@@ -109,14 +110,19 @@ impl AuthProvider {
 
         if !response.status().is_success() {
             let status = response.status();
-            let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(AvilaError::Config(format!("Authentication failed ({}): {}", status, error_text)));
+            let error_text = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "Unknown error".to_string());
+            return Err(AvilaError::Config(format!(
+                "Authentication failed ({}): {}",
+                status, error_text
+            )));
         }
 
-        let token: AuthToken = response
-            .json()
-            .await
-            .map_err(|e| AvilaError::Serialization(format!("Failed to parse auth response: {}", e)))?;
+        let token: AuthToken = response.json().await.map_err(|e| {
+            AvilaError::Serialization(format!("Failed to parse auth response: {}", e))
+        })?;
 
         let access_token = token.access_token.clone();
 
@@ -130,7 +136,8 @@ impl AuthProvider {
     pub async fn refresh_token(&self) -> Result<String> {
         let token = self.token.read().await;
 
-        let refresh_token = token.as_ref()
+        let refresh_token = token
+            .as_ref()
             .and_then(|t| t.refresh_token.clone())
             .ok_or_else(|| AvilaError::Config("No refresh token available".to_string()))?;
 
@@ -154,10 +161,9 @@ impl AuthProvider {
             return self.authenticate().await;
         }
 
-        let new_token: AuthToken = response
-            .json()
-            .await
-            .map_err(|e| AvilaError::Serialization(format!("Failed to parse refresh response: {}", e)))?;
+        let new_token: AuthToken = response.json().await.map_err(|e| {
+            AvilaError::Serialization(format!("Failed to parse refresh response: {}", e))
+        })?;
 
         let access_token = new_token.access_token.clone();
 

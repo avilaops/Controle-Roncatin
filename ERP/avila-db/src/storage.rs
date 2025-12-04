@@ -1,6 +1,6 @@
 //! Storage layer using Sled (Pure Rust embedded database)
 
-use sled::{Db, Batch};
+use sled::{Batch, Db};
 use std::path::Path;
 use std::sync::Arc;
 
@@ -20,22 +20,24 @@ pub struct Storage {
 impl Storage {
     /// Open a new storage instance
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
-        let db = sled::open(path)
-            .map_err(|e| AvilaError::Storage(e.to_string()))?;
+        let db = sled::open(path).map_err(|e| AvilaError::Storage(e.to_string()))?;
 
         Ok(Self { db: Arc::new(db) })
     }
 
     /// Put a key-value pair
     pub fn put(&self, key: &[u8], value: &[u8]) -> Result<()> {
-        self.db.insert(key, value)
+        self.db
+            .insert(key, value)
             .map_err(|e| AvilaError::Storage(e.to_string()))?;
         Ok(())
     }
 
     /// Get a value by key
     pub fn get(&self, key: &[u8]) -> Result<Option<Vec<u8>>> {
-        let result = self.db.get(key)
+        let result = self
+            .db
+            .get(key)
             .map_err(|e| AvilaError::Storage(e.to_string()))?;
 
         Ok(result.map(|v| v.to_vec()))
@@ -43,20 +45,24 @@ impl Storage {
 
     /// Delete a key
     pub fn delete(&self, key: &[u8]) -> Result<()> {
-        self.db.remove(key)
+        self.db
+            .remove(key)
             .map_err(|e| AvilaError::Storage(e.to_string()))?;
         Ok(())
     }
 
     /// Check if key exists
     pub fn exists(&self, key: &[u8]) -> Result<bool> {
-        Ok(self.db.contains_key(key)
+        Ok(self
+            .db
+            .contains_key(key)
             .map_err(|e| AvilaError::Storage(e.to_string()))?)
     }
 
     /// Batch write operations
     pub fn write_batch(&self, batch: Batch) -> Result<()> {
-        self.db.apply_batch(batch)
+        self.db
+            .apply_batch(batch)
             .map_err(|e| AvilaError::Storage(e.to_string()))?;
         Ok(())
     }
@@ -68,14 +74,17 @@ impl Storage {
 
     /// Flush data to disk
     pub fn flush(&self) -> Result<()> {
-        self.db.flush()
+        self.db
+            .flush()
             .map_err(|e| AvilaError::Storage(e.to_string()))?;
         Ok(())
     }
 
     /// Get approximate size of database
     pub fn size_on_disk(&self) -> Result<u64> {
-        Ok(self.db.size_on_disk()
+        Ok(self
+            .db
+            .size_on_disk()
             .map_err(|e| AvilaError::Storage(e.to_string()))?)
     }
 

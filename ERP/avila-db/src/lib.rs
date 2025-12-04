@@ -60,9 +60,13 @@ pub use document::Document;
 pub use error::{AvilaError, Result};
 pub use hnsw::{DistanceMetric, HnswIndex, SearchResult};
 pub use http::{HttpClient, HttpConfig};
-pub use partition::{HierarchicalPartitionKey, PartitionKeyComponent, PartitionRouter, PartitionStrategy};
+pub use partition::{
+    HierarchicalPartitionKey, PartitionKeyComponent, PartitionRouter, PartitionStrategy,
+};
 pub use query::Query;
-pub use telemetry::{OperationType, TelemetryCollector, TelemetryConfig, TelemetryEvent, TelemetrySpan};
+pub use telemetry::{
+    OperationType, TelemetryCollector, TelemetryConfig, TelemetryEvent, TelemetrySpan,
+};
 
 /// Maximum document size in bytes (4 MB)
 pub const MAX_DOCUMENT_SIZE: usize = 4 * 1024 * 1024;

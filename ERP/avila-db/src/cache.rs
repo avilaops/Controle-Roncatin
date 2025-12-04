@@ -1,11 +1,11 @@
 //! Query result cache for performance optimization
 
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
-use serde::{Deserialize, Serialize};
 
 use crate::query::QueryResult;
 
@@ -306,7 +306,13 @@ mod tests {
 
         cache.insert(key.clone(), result).await;
         cache.get(&key).await; // Hit
-        cache.get(&CacheKey::new("test".to_string(), "OTHER".to_string(), &serde_json::json!({}))).await; // Miss
+        cache
+            .get(&CacheKey::new(
+                "test".to_string(),
+                "OTHER".to_string(),
+                &serde_json::json!({}),
+            ))
+            .await; // Miss
 
         let stats = cache.stats().await;
         assert_eq!(stats.hits, 1);
@@ -318,8 +324,16 @@ mod tests {
     async fn test_invalidate_collection() {
         let cache = QueryCache::new(CacheConfig::default());
 
-        let key1 = CacheKey::new("coll1".to_string(), "SELECT *".to_string(), &serde_json::json!({}));
-        let key2 = CacheKey::new("coll2".to_string(), "SELECT *".to_string(), &serde_json::json!({}));
+        let key1 = CacheKey::new(
+            "coll1".to_string(),
+            "SELECT *".to_string(),
+            &serde_json::json!({}),
+        );
+        let key2 = CacheKey::new(
+            "coll2".to_string(),
+            "SELECT *".to_string(),
+            &serde_json::json!({}),
+        );
 
         cache.insert(key1.clone(), create_test_result()).await;
         cache.insert(key2.clone(), create_test_result()).await;

@@ -1,7 +1,7 @@
-pub mod cliente;
-pub mod produto;
-pub mod venda;
+mod banco;
+mod conta_bancaria;
+mod frontend;
 
-pub use cliente::*;
-pub use produto::*;
-pub use venda::*;
+pub use banco::*;
+pub use conta_bancaria::*;
+pub use frontend::*;

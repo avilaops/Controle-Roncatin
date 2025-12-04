@@ -88,19 +88,19 @@ impl Card {
             .child(
                 VirtualNode::new("div")
                     .class("card-header")
-                    .child(VirtualNode::new("h3").child(VirtualNode::text(&self.title)))
+                    .child(VirtualNode::new("h3").child(VirtualNode::text(&self.title))),
             )
             .child(
                 VirtualNode::new("div")
                     .class("card-body")
-                    .child(VirtualNode::new("p").child(VirtualNode::text(&self.content)))
+                    .child(VirtualNode::new("p").child(VirtualNode::text(&self.content))),
             );
 
         if let Some(footer) = &self.footer {
             card = card.child(
                 VirtualNode::new("div")
                     .class("card-footer")
-                    .child(VirtualNode::text(footer))
+                    .child(VirtualNode::text(footer)),
             );
         }
 
@@ -222,7 +222,7 @@ impl Navbar {
                 VirtualNode::new("a")
                     .class("nav-item")
                     .attr("href", &item.href)
-                    .child(VirtualNode::text(&item.label))
+                    .child(VirtualNode::text(&item.label)),
             );
         }
 
@@ -231,12 +231,12 @@ impl Navbar {
             .child(
                 VirtualNode::new("div")
                     .class("nav-brand")
-                    .child(VirtualNode::text(&self.brand))
+                    .child(VirtualNode::text(&self.brand)),
             )
             .child(
                 VirtualNode::new("div")
                     .class("nav-items")
-                    .children(nav_items)
+                    .children(nav_items),
             )
     }
 }

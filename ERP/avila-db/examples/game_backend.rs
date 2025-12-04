@@ -34,25 +34,37 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .set("xp", 125_000)
         .set("coins", 5000)
         .set("gems", 150)
-        .set("inventory", json!({
-            "weapons": ["sword", "bow", "magic_staff"],
-            "armor": ["helmet", "chestplate", "boots"],
-            "potions": {"health": 10, "mana": 5}
-        }))
-        .set("stats", json!({
-            "hp": 100,
-            "mp": 50,
-            "attack": 25,
-            "defense": 15,
-            "speed": 20
-        }))
-        .set("achievements", vec!["first_kill", "level_10", "arena_champion"])
+        .set(
+            "inventory",
+            json!({
+                "weapons": ["sword", "bow", "magic_staff"],
+                "armor": ["helmet", "chestplate", "boots"],
+                "potions": {"health": 10, "mana": 5}
+            }),
+        )
+        .set(
+            "stats",
+            json!({
+                "hp": 100,
+                "mp": 50,
+                "attack": 25,
+                "defense": 15,
+                "speed": 20
+            }),
+        )
+        .set(
+            "achievements",
+            vec!["first_kill", "level_10", "arena_champion"],
+        )
         .set("created_at", Utc::now())
         .set("last_login", Utc::now());
 
     let result = players.insert(player).await?;
     println!("✅ Player created: {}", result.id);
-    println!("   Compression: {:.2}x (saves bandwidth!)", result.compression_ratio);
+    println!(
+        "   Compression: {:.2}x (saves bandwidth!)",
+        result.compression_ratio
+    );
     println!();
 
     println!("=== 2. Leaderboards ===\n");
@@ -90,7 +102,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let xp: i32 = doc.get("xp")?;
         println!("   {}. {} - {} XP", rank + 1, username, xp);
     }
-    println!("   ⚡ Latency: {} ms (Brazil optimized!)", top_players.latency_ms);
+    println!(
+        "   ⚡ Latency: {} ms (Brazil optimized!)",
+        top_players.latency_ms
+    );
     println!();
 
     println!("=== 3. Game Sessions ===\n");
@@ -135,7 +150,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .execute()
         .await?;
 
-    println!("🎯 Found {} players for matchmaking", matches.documents.len());
+    println!(
+        "🎯 Found {} players for matchmaking",
+        matches.documents.len()
+    );
     println!();
 
     println!("=== 5. Real-time Stats ===\n");

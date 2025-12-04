@@ -1,9 +1,9 @@
 //! Query operations
 
-use std::collections::HashMap;
 use serde_json::Value;
+use std::collections::HashMap;
 
-use crate::{Collection, error::Result};
+use crate::{error::Result, Collection};
 
 /// Query result with documents and metadata
 #[derive(Debug, Clone)]
@@ -60,7 +60,7 @@ impl Query {
         // Validate SQL query
         if self.sql.trim().is_empty() {
             return Err(crate::error::AvilaError::Query(
-                "SQL query cannot be empty".to_string()
+                "SQL query cannot be empty".to_string(),
             ));
         }
 
@@ -119,21 +119,24 @@ impl Query {
         let latency_ms = start.elapsed().as_millis();
 
         // Record telemetry
-        self.collection.telemetry.record(crate::telemetry::TelemetryEvent {
-            operation: crate::telemetry::OperationType::Query,
-            database: self.collection.database.clone(),
-            collection: self.collection.name.clone(),
-            duration_ms: latency_ms as u64,
-            success: true,
-            error_message: None,
-            document_count: documents.len(),
-            bytes_transferred: 0,
-            compression_ratio,
-            timestamp: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_secs(),
-        }).await;
+        self.collection
+            .telemetry
+            .record(crate::telemetry::TelemetryEvent {
+                operation: crate::telemetry::OperationType::Query,
+                database: self.collection.database.clone(),
+                collection: self.collection.name.clone(),
+                duration_ms: latency_ms as u64,
+                success: true,
+                error_message: None,
+                document_count: documents.len(),
+                bytes_transferred: 0,
+                compression_ratio,
+                timestamp: std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs(),
+            })
+            .await;
 
         Ok(QueryResult {
             documents,
@@ -147,8 +150,10 @@ impl Query {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{
+        AuthProvider, Config, HttpClient, HttpConfig, TelemetryCollector, TelemetryConfig,
+    };
     use std::sync::Arc;
-    use crate::{Config, HttpClient, HttpConfig, AuthProvider, TelemetryCollector, TelemetryConfig};
 
     #[tokio::test]
     async fn test_query_builder() {
@@ -164,7 +169,8 @@ mod tests {
             http_client,
             auth_provider,
             telemetry,
-        ).unwrap();
+        )
+        .unwrap();
 
         // Test query building (without execution)
         let query = collection

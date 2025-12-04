@@ -1,42 +1,26 @@
-use mongodb::{Client, Database, Collection, bson::doc};
-use serde::{Deserialize, Serialize};
-use anyhow::Result;
+use mongodb::{Client, Collection, Database};
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct MongoDb {
-    pub db: Database,
+    db: Database,
 }
 
 impl MongoDb {
-    pub async fn new(uri: &str, database_name: &str) -> Result<Self> {
+    pub async fn new(uri: &str, db_name: &str) -> Result<Self, mongodb::error::Error> {
         let client = Client::with_uri_str(uri).await?;
-
-        // Ping para verificar conexão
-        client
-            .database("admin")
-            .run_command(doc! { "ping": 1 }, None)
-            .await?;
-
-        tracing::info!("✅ Conectado ao MongoDB Atlas");
-
-        let db = client.database(database_name);
-
+        let db = client.database(db_name);
         Ok(Self { db })
     }
 
-    pub fn clientes(&self) -> Collection<crate::models::Cliente> {
-        self.db.collection("clientes")
+    pub fn contas_bancarias(&self) -> Collection<crate::models::ContaBancaria> {
+        self.db.collection("contas_bancarias")
     }
 
-    pub fn produtos(&self) -> Collection<crate::models::Produto> {
-        self.db.collection("produtos")
+    pub fn cartoes(&self) -> Collection<crate::models::Cartao> {
+        self.db.collection("cartoes")
     }
 
-    pub fn vendas(&self) -> Collection<crate::models::Venda> {
-        self.db.collection("vendas")
+    pub fn bancos(&self) -> Collection<crate::models::Banco> {
+        self.db.collection("bancos")
     }
 }
-
-// Adicionar no Cargo.toml:
-// mongodb = "2.8"
-// bson = "2.9"

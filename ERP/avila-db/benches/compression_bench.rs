@@ -2,8 +2,8 @@
 //!
 //! Run with: cargo bench --bench compression_bench
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput};
 use aviladb::compression::{compress, decompress, CompressionLevel};
+use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput};
 
 fn generate_test_data(size: usize, pattern: &str) -> Vec<u8> {
     match pattern {
@@ -59,9 +59,7 @@ fn bench_decompression(c: &mut Criterion) {
     let lz4_compressed = compress(&data, CompressionLevel::Fast).unwrap();
     let zstd_compressed = compress(&data, CompressionLevel::Best).unwrap();
 
-    group.bench_function("lz4", |b| {
-        b.iter(|| decompress(black_box(&lz4_compressed)))
-    });
+    group.bench_function("lz4", |b| b.iter(|| decompress(black_box(&lz4_compressed))));
 
     group.bench_function("zstd", |b| {
         b.iter(|| decompress(black_box(&zstd_compressed)))

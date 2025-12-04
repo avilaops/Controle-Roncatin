@@ -22,10 +22,8 @@
 //!
 //! For more information: <https://github.com/avilaops/arxis>
 
-use criterion::{
-    black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput,
-};
-use aviladb::{Document, Config};
+use aviladb::{Config, Document};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use std::time::Duration;
 
 // ============================================================================
@@ -50,7 +48,12 @@ fn bench_insert(c: &mut Criterion) {
     let mut group = c.benchmark_group("insert");
 
     // Benchmark different document sizes
-    for &size in &[SMALL_DOC_SIZE, MEDIUM_DOC_SIZE, LARGE_DOC_SIZE, XLARGE_DOC_SIZE] {
+    for &size in &[
+        SMALL_DOC_SIZE,
+        MEDIUM_DOC_SIZE,
+        LARGE_DOC_SIZE,
+        XLARGE_DOC_SIZE,
+    ] {
         let doc = create_document(size);
 
         group.throughput(Throughput::Bytes(size as u64));
@@ -76,10 +79,22 @@ fn bench_query(c: &mut Criterion) {
     // Benchmark query patterns
     let patterns = vec![
         ("point_read", "SELECT * FROM c WHERE c.id = @id"),
-        ("range_scan", "SELECT * FROM c WHERE c.timestamp > @start AND c.timestamp < @end"),
-        ("filter", "SELECT * FROM c WHERE c.level > 40 AND c.active = true"),
-        ("aggregation", "SELECT COUNT(*) as total FROM c WHERE c.region = 'BR'"),
-        ("join", "SELECT * FROM c JOIN t IN c.tags WHERE t = 'premium'"),
+        (
+            "range_scan",
+            "SELECT * FROM c WHERE c.timestamp > @start AND c.timestamp < @end",
+        ),
+        (
+            "filter",
+            "SELECT * FROM c WHERE c.level > 40 AND c.active = true",
+        ),
+        (
+            "aggregation",
+            "SELECT COUNT(*) as total FROM c WHERE c.region = 'BR'",
+        ),
+        (
+            "join",
+            "SELECT * FROM c JOIN t IN c.tags WHERE t = 'premium'",
+        ),
     ];
 
     for (name, _query) in patterns {
@@ -109,9 +124,7 @@ fn bench_update(c: &mut Criterion) {
         group.bench_function(name, |b| {
             let doc = create_document_with_fields(field_count);
             b.to_async(tokio::runtime::Runtime::new().unwrap())
-                .iter(|| async {
-                    black_box(doc.validate())
-                });
+                .iter(|| async { black_box(doc.validate()) });
         });
     }
 
@@ -123,9 +136,7 @@ fn bench_delete(c: &mut Criterion) {
 
     group.bench_function("single_document", |b| {
         b.to_async(tokio::runtime::Runtime::new().unwrap())
-            .iter(|| async {
-                black_box(true)
-            });
+            .iter(|| async { black_box(true) });
     });
 
     group.bench_function("batch_delete_100", |b| {
@@ -181,9 +192,7 @@ fn bench_compression(c: &mut Criterion) {
             BenchmarkId::new("lz4_decompress", format!("{}KB", size / 1024)),
             &data,
             |b, data| {
-                b.iter(|| {
-                    black_box(data.clone())
-                });
+                b.iter(|| black_box(data.clone()));
             },
         );
     }
@@ -265,9 +274,7 @@ fn bench_concurrent_inserts(c: &mut Criterion) {
                     let mut handles = Vec::new();
 
                     for _ in 0..users {
-                        handles.push(tokio::spawn(async {
-                            black_box(42)
-                        }));
+                        handles.push(tokio::spawn(async { black_box(42) }));
                     }
 
                     for handle in handles {
@@ -291,9 +298,7 @@ fn bench_concurrent_queries(c: &mut Criterion) {
                     let mut handles = Vec::new();
 
                     for _ in 0..users {
-                        handles.push(tokio::spawn(async {
-                            black_box(42)
-                        }));
+                        handles.push(tokio::spawn(async { black_box(42) }));
                     }
 
                     for handle in handles {
@@ -369,8 +374,9 @@ fn bench_latency_percentiles(c: &mut Criterion) {
             .iter(|| async {
                 // Simulate variable latency (5-15ms in Brazil)
                 tokio::time::sleep(Duration::from_micros(
-                    5000 + (rand::random::<u64>() % 10000)
-                )).await;
+                    5000 + (rand::random::<u64>() % 10000),
+                ))
+                .await;
             });
     });
 
@@ -492,9 +498,7 @@ fn bench_vs_dynamodb(c: &mut Criterion) {
     // AvilaDB: 4 MB documents
     group.bench_function("aviladb_4mb_doc", |b| {
         let doc = create_document(XLARGE_DOC_SIZE);
-        b.iter(|| {
-            black_box(doc.validate())
-        });
+        b.iter(|| black_box(doc.validate()));
     });
 
     // DynamoDB: 400 KB limit (need to split)
@@ -517,9 +521,7 @@ fn bench_vs_cosmosdb(c: &mut Criterion) {
     // AvilaDB: 4 MB documents
     group.bench_function("aviladb_4mb_doc", |b| {
         let doc = create_document(XLARGE_DOC_SIZE);
-        b.iter(|| {
-            black_box(doc.validate())
-        });
+        b.iter(|| black_box(doc.validate()));
     });
 
     // Cosmos DB: 2 MB limit (need to split)
@@ -613,9 +615,7 @@ fn bench_serialization(c: &mut Criterion) {
             BenchmarkId::new("json_serialize", format!("{}KB", size / 1024)),
             &doc,
             |b, doc| {
-                b.iter(|| {
-                    black_box(doc.to_json().unwrap())
-                });
+                b.iter(|| black_box(doc.to_json().unwrap()));
             },
         );
 
@@ -625,9 +625,7 @@ fn bench_serialization(c: &mut Criterion) {
             BenchmarkId::new("json_deserialize", format!("{}KB", size / 1024)),
             &json,
             |b, json| {
-                b.iter(|| {
-                    black_box(Document::from_json(json).unwrap())
-                });
+                b.iter(|| black_box(Document::from_json(json).unwrap()));
             },
         );
     }

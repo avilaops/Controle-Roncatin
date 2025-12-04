@@ -1,13 +1,15 @@
+#![allow(dead_code)]
+
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{window, Document};
 
 mod api;
-mod models;
 mod components;
+mod models;
 mod pages;
 
-use pages::{Dashboard, Clientes, Produtos, Vendas};
+use pages::{Clientes, Contas, Dashboard, Produtos, Vendas};
 
 #[wasm_bindgen(start)]
 pub fn start() {
@@ -34,7 +36,7 @@ fn init_app() -> Result<(), JsValue> {
 }
 
 fn setup_tabs(document: &Document) -> Result<(), JsValue> {
-    let tabs = vec!["dashboard", "vendas", "produtos", "clientes"];
+    let tabs = vec!["dashboard", "vendas", "produtos", "clientes", "contas"];
 
     for tab_name in tabs {
         let btn = document
@@ -75,6 +77,7 @@ fn switch_tab(tab_name: &str) -> Result<(), JsValue> {
         "clientes" => load_clientes()?,
         "produtos" => load_produtos()?,
         "vendas" => load_vendas()?,
+        "contas" => load_contas()?,
         _ => {}
     }
 
@@ -112,6 +115,15 @@ fn load_vendas() -> Result<(), JsValue> {
     wasm_bindgen_futures::spawn_local(async {
         if let Err(e) = Vendas::load().await {
             web_sys::console::error_1(&format!("Erro em vendas: {:?}", e).into());
+        }
+    });
+    Ok(())
+}
+
+fn load_contas() -> Result<(), JsValue> {
+    wasm_bindgen_futures::spawn_local(async {
+        if let Err(e) = Contas::load().await {
+            web_sys::console::error_1(&format!("Erro em contas: {:?}", e).into());
         }
     });
     Ok(())

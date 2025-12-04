@@ -1,6 +1,5 @@
 //! Collection operations
 
-use std::sync::Arc;
 use crate::{
     auth::AuthProvider,
     compression::{compress, CompressionLevel},
@@ -9,6 +8,7 @@ use crate::{
     Config, Document, InsertResult, Query, Result,
 };
 use serde_json::json;
+use std::sync::Arc;
 
 /// Collection handle for document operations
 #[allow(dead_code)]
@@ -139,21 +139,23 @@ impl Collection {
         let latency_ms = start.elapsed().as_millis();
 
         // Record telemetry
-        self.telemetry.record(crate::telemetry::TelemetryEvent {
-            operation: crate::telemetry::OperationType::Insert,
-            database: self.database.clone(),
-            collection: self.name.clone(),
-            duration_ms: latency_ms as u64,
-            success: true,
-            error_message: None,
-            document_count: 1,
-            bytes_transferred: original_size,
-            compression_ratio,
-            timestamp: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_secs(),
-        }).await;
+        self.telemetry
+            .record(crate::telemetry::TelemetryEvent {
+                operation: crate::telemetry::OperationType::Insert,
+                database: self.database.clone(),
+                collection: self.name.clone(),
+                duration_ms: latency_ms as u64,
+                success: true,
+                error_message: None,
+                document_count: 1,
+                bytes_transferred: original_size,
+                compression_ratio,
+                timestamp: std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs(),
+            })
+            .await;
 
         Ok(InsertResult {
             id: doc_id,
@@ -231,9 +233,9 @@ impl Collection {
             .http_client
             .post_with_headers(&url, &batch_payload, headers)
             .await?;
-        let ids = response_data["ids"]
-            .as_array()
-            .ok_or_else(|| crate::error::AvilaError::Network("Invalid batch response".to_string()))?;
+        let ids = response_data["ids"].as_array().ok_or_else(|| {
+            crate::error::AvilaError::Network("Invalid batch response".to_string())
+        })?;
 
         let total_latency = start.elapsed().as_millis();
         let avg_latency = total_latency / ids.len().max(1) as u128;
@@ -254,21 +256,23 @@ impl Collection {
         let total_bytes: usize = size_info.iter().map(|(s, _)| s).sum();
         let avg_ratio = size_info.iter().map(|(_, r)| r).sum::<f64>() / results.len().max(1) as f64;
 
-        self.telemetry.record(crate::telemetry::TelemetryEvent {
-            operation: crate::telemetry::OperationType::InsertBatch,
-            database: self.database.clone(),
-            collection: self.name.clone(),
-            duration_ms: total_latency as u64,
-            success: true,
-            error_message: None,
-            document_count: docs.len(),
-            bytes_transferred: total_bytes,
-            compression_ratio: avg_ratio,
-            timestamp: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_secs(),
-        }).await;
+        self.telemetry
+            .record(crate::telemetry::TelemetryEvent {
+                operation: crate::telemetry::OperationType::InsertBatch,
+                database: self.database.clone(),
+                collection: self.name.clone(),
+                duration_ms: total_latency as u64,
+                success: true,
+                error_message: None,
+                document_count: docs.len(),
+                bytes_transferred: total_bytes,
+                compression_ratio: avg_ratio,
+                timestamp: std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs(),
+            })
+            .await;
 
         Ok(results)
     }
@@ -317,21 +321,27 @@ impl Collection {
                 let latency_ms = start.elapsed().as_millis() as u64;
 
                 // Record telemetry
-                self.telemetry.record(crate::telemetry::TelemetryEvent {
-                    operation: crate::telemetry::OperationType::Get,
-                    database: self.database.clone(),
-                    collection: self.name.clone(),
-                    duration_ms: latency_ms,
-                    success: true,
-                    error_message: None,
-                    document_count: 1,
-                    bytes_transferred: doc_json.len(),
-                    compression_ratio: if self.config.enable_compression { 2.0 } else { 1.0 },
-                    timestamp: std::time::SystemTime::now()
-                        .duration_since(std::time::UNIX_EPOCH)
-                        .unwrap()
-                        .as_secs(),
-                }).await;
+                self.telemetry
+                    .record(crate::telemetry::TelemetryEvent {
+                        operation: crate::telemetry::OperationType::Get,
+                        database: self.database.clone(),
+                        collection: self.name.clone(),
+                        duration_ms: latency_ms,
+                        success: true,
+                        error_message: None,
+                        document_count: 1,
+                        bytes_transferred: doc_json.len(),
+                        compression_ratio: if self.config.enable_compression {
+                            2.0
+                        } else {
+                            1.0
+                        },
+                        timestamp: std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .unwrap()
+                            .as_secs(),
+                    })
+                    .await;
 
                 Ok(Some(doc))
             }
@@ -394,11 +404,7 @@ impl Collection {
     }
 
     /// Perform vector search
-    pub async fn vector_search(
-        &self,
-        field: &str,
-        query_vector: Vec<f32>,
-    ) -> VectorSearchBuilder {
+    pub async fn vector_search(&self, field: &str, query_vector: Vec<f32>) -> VectorSearchBuilder {
         VectorSearchBuilder::new(self.clone(), field.to_string(), query_vector)
     }
 }
@@ -426,7 +432,11 @@ impl UpdateBuilder {
         self
     }
 
-    pub fn where_eq<V: serde::Serialize + std::fmt::Debug>(mut self, field: &str, value: V) -> Self {
+    pub fn where_eq<V: serde::Serialize + std::fmt::Debug>(
+        mut self,
+        field: &str,
+        value: V,
+    ) -> Self {
         self.conditions.push(format!("{} = {:?}", field, value));
         self
     }
@@ -437,14 +447,14 @@ impl UpdateBuilder {
         // Validate we have updates to perform
         if self.updates.is_empty() {
             return Err(crate::error::AvilaError::Query(
-                "No fields to update".to_string()
+                "No fields to update".to_string(),
             ));
         }
 
         // Validate we have conditions (prevent accidental full-table updates)
         if self.conditions.is_empty() {
             return Err(crate::error::AvilaError::Query(
-                "Update without WHERE clause requires explicit confirmation".to_string()
+                "Update without WHERE clause requires explicit confirmation".to_string(),
             ));
         }
 
@@ -454,9 +464,7 @@ impl UpdateBuilder {
         // Build update request
         let url = format!(
             "{}/v1/databases/{}/collections/{}/update",
-            self.collection.config.endpoint,
-            self.collection.database,
-            self.collection.name
+            self.collection.config.endpoint, self.collection.database, self.collection.name
         );
 
         let mut headers = reqwest::header::HeaderMap::new();
@@ -492,21 +500,24 @@ impl UpdateBuilder {
         let latency_ms = start.elapsed().as_millis() as u64;
 
         // Record telemetry
-        self.collection.telemetry.record(crate::telemetry::TelemetryEvent {
-            operation: crate::telemetry::OperationType::Update,
-            database: self.collection.database.clone(),
-            collection: self.collection.name.clone(),
-            duration_ms: latency_ms,
-            success: true,
-            error_message: None,
-            document_count: updated_count,
-            bytes_transferred: 0,
-            compression_ratio: 1.0,
-            timestamp: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_secs(),
-        }).await;
+        self.collection
+            .telemetry
+            .record(crate::telemetry::TelemetryEvent {
+                operation: crate::telemetry::OperationType::Update,
+                database: self.collection.database.clone(),
+                collection: self.collection.name.clone(),
+                duration_ms: latency_ms,
+                success: true,
+                error_message: None,
+                document_count: updated_count,
+                bytes_transferred: 0,
+                compression_ratio: 1.0,
+                timestamp: std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs(),
+            })
+            .await;
 
         Ok(updated_count)
     }
@@ -527,7 +538,11 @@ impl DeleteBuilder {
         }
     }
 
-    pub fn where_eq<V: serde::Serialize + std::fmt::Debug>(mut self, field: &str, value: V) -> Self {
+    pub fn where_eq<V: serde::Serialize + std::fmt::Debug>(
+        mut self,
+        field: &str,
+        value: V,
+    ) -> Self {
         self.conditions.push(format!("{} = {:?}", field, value));
         self
     }
@@ -548,9 +563,7 @@ impl DeleteBuilder {
         // Build delete request
         let url = format!(
             "{}/v1/databases/{}/collections/{}/delete",
-            self.collection.config.endpoint,
-            self.collection.database,
-            self.collection.name
+            self.collection.config.endpoint, self.collection.database, self.collection.name
         );
 
         let mut headers = reqwest::header::HeaderMap::new();
@@ -579,21 +592,24 @@ impl DeleteBuilder {
         let latency_ms = start.elapsed().as_millis() as u64;
 
         // Record telemetry
-        self.collection.telemetry.record(crate::telemetry::TelemetryEvent {
-            operation: crate::telemetry::OperationType::Delete,
-            database: self.collection.database.clone(),
-            collection: self.collection.name.clone(),
-            duration_ms: latency_ms,
-            success: true,
-            error_message: None,
-            document_count: deleted_count,
-            bytes_transferred: 0,
-            compression_ratio: 1.0,
-            timestamp: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_secs(),
-        }).await;
+        self.collection
+            .telemetry
+            .record(crate::telemetry::TelemetryEvent {
+                operation: crate::telemetry::OperationType::Delete,
+                database: self.collection.database.clone(),
+                collection: self.collection.name.clone(),
+                duration_ms: latency_ms,
+                success: true,
+                error_message: None,
+                document_count: deleted_count,
+                bytes_transferred: 0,
+                compression_ratio: 1.0,
+                timestamp: std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs(),
+            })
+            .await;
 
         Ok(deleted_count)
     }
@@ -638,14 +654,14 @@ impl VectorSearchBuilder {
         // Validate vector dimension
         if self.query_vector.is_empty() {
             return Err(crate::error::AvilaError::VectorSearch(
-                "Query vector cannot be empty".to_string()
+                "Query vector cannot be empty".to_string(),
             ));
         }
 
         // Validate top_k
         if self.top_k == 0 {
             return Err(crate::error::AvilaError::VectorSearch(
-                "top_k must be greater than 0".to_string()
+                "top_k must be greater than 0".to_string(),
             ));
         }
 
@@ -665,7 +681,7 @@ impl VectorSearchBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{HttpClient, HttpConfig, AuthProvider, TelemetryCollector, TelemetryConfig};
+    use crate::{AuthProvider, HttpClient, HttpConfig, TelemetryCollector, TelemetryConfig};
 
     #[tokio::test]
     async fn test_collection_insert() {

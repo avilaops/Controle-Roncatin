@@ -1,14 +1,14 @@
 use wasm_bindgen::prelude::*;
 
-pub mod core;
 pub mod components;
-pub mod router;
-pub mod state;
+pub mod core;
 pub mod dom;
 pub mod events;
+pub mod router;
+pub mod state;
 
-pub use core::*;
 pub use components::*;
+pub use core::*;
 pub use router::*;
 pub use state::*;
 

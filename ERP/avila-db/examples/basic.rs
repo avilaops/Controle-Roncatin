@@ -26,12 +26,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .set("username", "CoolGamer")
         .set("level", 42)
         .set("inventory", vec!["sword", "shield", "potion"])
-        .set("stats", serde_json::json!({
-            "hp": 100,
-            "mp": 50,
-            "attack": 25,
-            "defense": 15
-        }));
+        .set(
+            "stats",
+            serde_json::json!({
+                "hp": 100,
+                "mp": 50,
+                "attack": 25,
+                "defense": 15
+            }),
+        );
 
     let result = players.insert(player).await?;
     println!("✓ Inserted document ID: {}", result.id);

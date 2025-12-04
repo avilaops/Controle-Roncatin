@@ -1,6 +1,6 @@
 //! Integration tests for AvilaDB SDK
 
-use aviladb::{AvilaClient, Document, Config};
+use aviladb::{AvilaClient, Config, Document};
 use chrono::Utc;
 
 #[tokio::test]
@@ -15,8 +15,14 @@ async fn test_document_crud() {
         .await
         .expect("Failed to connect");
 
-    let db = client.database("test_db").await.expect("Failed to get database");
-    let collection = db.collection("test_collection").await.expect("Failed to get collection");
+    let db = client
+        .database("test_db")
+        .await
+        .expect("Failed to get database");
+    let collection = db
+        .collection("test_collection")
+        .await
+        .expect("Failed to get collection");
 
     // Insert
     let doc = Document::new()
@@ -29,8 +35,14 @@ async fn test_document_crud() {
     assert!(result.is_ok(), "Failed to insert document");
 
     let insert_result = result.unwrap();
-    assert!(!insert_result.id.is_empty(), "Document ID should not be empty");
-    assert!(insert_result.compression_ratio > 0.0, "Compression ratio should be positive");
+    assert!(
+        !insert_result.id.is_empty(),
+        "Document ID should not be empty"
+    );
+    assert!(
+        insert_result.compression_ratio > 0.0,
+        "Compression ratio should be positive"
+    );
 
     // Query
     let query_result = collection
@@ -41,7 +53,10 @@ async fn test_document_crud() {
 
     assert!(query_result.is_ok(), "Failed to query documents");
     let docs = query_result.unwrap();
-    assert!(!docs.documents.is_empty(), "Should find at least one document");
+    assert!(
+        !docs.documents.is_empty(),
+        "Should find at least one document"
+    );
 
     // Update
     let update_result = collection
@@ -79,8 +94,14 @@ async fn test_batch_insert() {
         .await
         .expect("Failed to connect");
 
-    let db = client.database("test_db").await.expect("Failed to get database");
-    let collection = db.collection("batch_test").await.expect("Failed to get collection");
+    let db = client
+        .database("test_db")
+        .await
+        .expect("Failed to get database");
+    let collection = db
+        .collection("batch_test")
+        .await
+        .expect("Failed to get collection");
 
     let docs: Vec<Document> = (0..10)
         .map(|i| {
@@ -98,13 +119,19 @@ async fn test_batch_insert() {
 #[tokio::test]
 async fn test_config_validation() {
     let valid_config = Config::default();
-    assert!(valid_config.validate().is_ok(), "Default config should be valid");
+    assert!(
+        valid_config.validate().is_ok(),
+        "Default config should be valid"
+    );
 
     let invalid_config = Config {
         max_connections: 0,
         ..Default::default()
     };
-    assert!(invalid_config.validate().is_err(), "Zero connections should be invalid");
+    assert!(
+        invalid_config.validate().is_err(),
+        "Zero connections should be invalid"
+    );
 
     let oversized_doc_config = Config {
         max_document_size: 5 * 1024 * 1024, // 5 MB
@@ -122,8 +149,14 @@ async fn test_query_with_parameters() {
         .await
         .expect("Failed to connect");
 
-    let db = client.database("test_db").await.expect("Failed to get database");
-    let collection = db.collection("param_test").await.expect("Failed to get collection");
+    let db = client
+        .database("test_db")
+        .await
+        .expect("Failed to get database");
+    let collection = db
+        .collection("param_test")
+        .await
+        .expect("Failed to get collection");
 
     // Insert test data
     for i in 1..=5 {
@@ -146,7 +179,10 @@ async fn test_query_with_parameters() {
 
     assert!(result.is_ok(), "Failed to query with parameters");
     let docs = result.unwrap();
-    assert!(docs.documents.len() >= 2, "Should find at least 2 documents with level > 25");
+    assert!(
+        docs.documents.len() >= 2,
+        "Should find at least 2 documents with level > 25"
+    );
 }
 
 #[tokio::test]
@@ -155,8 +191,14 @@ async fn test_compression() {
         .await
         .expect("Failed to connect");
 
-    let db = client.database("test_db").await.expect("Failed to get database");
-    let collection = db.collection("compression_test").await.expect("Failed to get collection");
+    let db = client
+        .database("test_db")
+        .await
+        .expect("Failed to get database");
+    let collection = db
+        .collection("compression_test")
+        .await
+        .expect("Failed to get collection");
 
     // Insert document with repetitive data (highly compressible)
     let repetitive_data = "A".repeat(1000);
