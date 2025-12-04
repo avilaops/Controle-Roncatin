@@ -40,11 +40,11 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host ""
     Write-Host "✅ Deploy iniciado com sucesso!" -ForegroundColor Green
     Write-Host ""
-    
+
     # Obter URL do deployment
     Write-Host "🌐 Obtendo URL do deployment..." -ForegroundColor Yellow
     $domain = railway domain 2>&1 | Out-String
-    
+
     if ($domain -and $domain.Trim()) {
         Write-Host ""
         Write-Host "✅ Aplicação disponível em: https://$($domain.Trim())" -ForegroundColor Green
@@ -54,7 +54,7 @@ if ($LASTEXITCODE -eq 0) {
         Write-Host "   - API Health: https://$($domain.Trim())/api/v1/health" -ForegroundColor White
         Write-Host "   - Logs: railway logs" -ForegroundColor White
     }
-    
+
     Write-Host ""
     Write-Host "⚡ YOLO MODE CONFIG:" -ForegroundColor Yellow
     Write-Host "   - 32 worker threads" -ForegroundColor White

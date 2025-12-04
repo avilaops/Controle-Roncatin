@@ -11,8 +11,9 @@ axum.workspace = true
 tower.workspace = true
 tower-http.workspace = true
 
-# Database (sem equivalente Avila)
-sqlx.workspace = true
+# Database - MongoDB Atlas
+mongodb = "2.8"
+bson = "2.9"
 
 # Serialization (mantido por compatibilidade com Axum/SQLx)
 serde.workspace = true

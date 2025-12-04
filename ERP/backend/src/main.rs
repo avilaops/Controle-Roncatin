@@ -14,24 +14,22 @@ async fn main() -> anyhow::Result<()> {
         .json()
         .init();
 
-    info!("🚀 Iniciando Avila ERP Server");
+    info!("🚀 Iniciando Avila ERP Server - YOLO MODE");
 
     // Carregar configuração
     let config = Config::from_env()?;
 
-    // Conectar ao banco de dados
-    let pool = avila_erp::db::connect(&config.database_url).await?;
+    // Conectar ao MongoDB Atlas
+    let mongodb_uri = std::env::var("MONGO_ATLAS_URI")
+        .unwrap_or_else(|_| config.database_url.clone());
+    
+    let mongo = avila_erp::mongodb::MongoDb::new(&mongodb_uri, "avila_erp").await?;
 
-    // Executar migrations
-    sqlx::migrate!("../database/migrations")
-        .run(&pool)
-        .await?;
-
-    info!("✅ Banco de dados conectado e migrations aplicadas");
+    info!("✅ MongoDB Atlas conectado");
 
     // Criar aplicação
     let app = Router::new()
-        .nest("/api/v1", routes::create_routes(pool.clone()))
+        .nest("/api/v1", routes::create_routes(mongo))
         .layer(CorsLayer::permissive());
 
     let addr = format!("{}:{}", config.host, config.port);

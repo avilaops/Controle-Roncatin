@@ -37,11 +37,10 @@ EXPOSE 3000
 
 # Set environment variables
 ENV RUST_LOG=info
-ENV DATABASE_URL=sqlite:///app/database/erp.db
 ENV PORT=3000
 
-# Create database directory
-RUN mkdir -p /app/database
+# MongoDB Atlas será configurado via variável de ambiente no Railway
+# ENV MONGO_ATLAS_URI será injetado pelo Railway
 
 # Start backend
 CMD ["/app/backend"]
